@@ -1,7 +1,7 @@
 //IMPORTING LIBRABRIES FROM OTHER DIRECTORIES
-const User = require("../Schema/User");
+const User = require("../models/user.models");
 const asyncHandler = require("express-async-handler");
-const { generateToken } = require("../service/jwtToken");
+const { generateToken } = require("../../config/jwtToken");
 
 
 //CREATING A USER
@@ -56,11 +56,45 @@ const getAllUsers = asyncHandler(async(req, res) => {
 //GETTING A USER
 const getaUser = asyncHandler(async(req, res) => {
     const {id} = req.params;
-    console.log(id);
+    try {
+        const getaUser = await User.findById(id);
+        res.json({getaUser})
+    } catch (error) {
+        throw new Error(error);
+    }
 
-})
+});
+
+//UPDATE A USER
+const updateaUser = asyncHandler(async(req, res) => {
+    const {id} = req.params;
+    try {
+        const updateaUser = await User.findByIdAndUpdate(id,
+            {
+                first_name: req?.body?.first_name,
+                last_name: req?.body?.last_name,
+                email: req?.body?.email,
+            }, {
+                new: true,
+            });
+        res.json({updateaUser})
+    } catch (error) {
+        throw new Error(error);
+    }
+
+});
 
 
+//DELETE A USER
+const deleteaUser = asyncHandler(async(req, res) => {
+    const {id} = req.params;
+    try {
+        const deleteaUser = await User.findByIdAndDelete(id);
+        res.json({deleteaUser})
+    } catch (error) {
+        throw new Error(error);
+    }
 
+});
 
-module.exports = {createUser, loginCtrl, getAllUsers};
+module.exports = {updateaUser, createUser, loginCtrl, getAllUsers, getaUser, deleteaUser};

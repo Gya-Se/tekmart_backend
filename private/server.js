@@ -1,11 +1,11 @@
 const express = require("express");
 const bodyParser = require("body-parser");
-const dbConnect = require("../database/mongodb");
+const dbConnect = require("../config/dbConnection");
 const app = express();
 const dotenv = require("dotenv").config();
 const PORT = process.env.PORT || 3001;
-const authRouter = require("./route/authRoute");
-const { notFound, errorHandler } = require("./middlewares/errorHandler");
+const authRouter = require("./route/auth.routes");
+const { notFound, errorHandler } = require("./middlewares/customErrorHandler");
 dbConnect();
 
 //BODY PARSER
