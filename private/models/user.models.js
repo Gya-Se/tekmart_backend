@@ -31,7 +31,25 @@ const UserSchema = new mongoose.Schema({
         default: "user"
     },
 
-}, {timestamp: true});
+    isBlocked: {
+        type: Boolean,
+        default: false,
+    },
+
+    cart: {
+        type: Array,
+        default: []
+    },
+
+    address: [{type: mongoose.Schema.Types.ObjectId, ref: "Address"}],
+
+    wishlist: [{type: mongoose.Schema.Types.ObjectId, ref: "Product"}],
+
+    refreshToken: {
+        type: String,
+    }
+
+}, {timestamps: true});
 
 
 //ENCRYPTING PASSWORD
