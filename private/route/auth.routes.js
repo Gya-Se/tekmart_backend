@@ -8,18 +8,21 @@ const { createUser,
     unBlockUser, 
     blockUser, 
     handleRefreshToken,
-    logout, } = require("../controller/user.controller");
+    logout,
+    updatePassword, } = require("../controller/user.controller");
 const { authMiddleware, isAdmin } = require("../middlewares/authMiddleware");
 const router = express.Router();
 
 
 router.post("/register", createUser);
+router.put("/password", authMiddleware, updatePassword);
 router.post("/login", loginCtrl);
 router.get("/getallusers", getAllUsers);
 router.get("/refresh", handleRefreshToken); 
 router.get("/logout", logout); 
 router.get("/:id", authMiddleware, isAdmin, getaUser);
 router.delete("/:id", deleteaUser);
+
 router.put("/edit", authMiddleware, updateaUser); 
 router.put("/block-user/:id", authMiddleware, isAdmin, blockUser); 
 router.put("/unblock-user/:id", authMiddleware, isAdmin, unBlockUser); 
