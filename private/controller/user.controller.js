@@ -5,6 +5,8 @@ const { generateToken } = require("../../config/jwtToken");
 const validateMongoDbId = require("../../utils/validateMongoDbId");
 const { generateRefreshToken } = require("../../config/refreshToken");
 const jwt = require("jsonwebtoken");
+const sendEmail = require("./email.controller");
+const crypto = require("crypto");
 
 //CREATING A USER
 const createUser = asyncHandler( async(req, res) => {
@@ -20,7 +22,6 @@ const createUser = asyncHandler( async(req, res) => {
         }
     }
 );
-
 
 //USER LOGIN AND PASSWORD AUTHENTICATION
 const loginCtrl =  asyncHandler( async(req, res) => {
@@ -54,7 +55,6 @@ const loginCtrl =  asyncHandler( async(req, res) => {
 
 });
 
-
 //HANDLE REFRESH TOKEN
 const handleRefreshToken = asyncHandler(async(req, res) => {
     const cookie = req.cookies;
@@ -75,8 +75,6 @@ const handleRefreshToken = asyncHandler(async(req, res) => {
         res.json({accessToken});
     });
 });
-
-
 
 //HANDLE LOGOUT
 const logout = asyncHandler(async(req, res) => {
@@ -106,9 +104,6 @@ res.clearCookie("refreshToken", {
 res.sendStatus(204); //FORBIDDEN
 });
 
-
-
-
 //GETTING ALL USERS
 const getAllUsers = asyncHandler(async(req, res) => {
     try {
@@ -119,7 +114,6 @@ const getAllUsers = asyncHandler(async(req, res) => {
     }
 
 });
-
 
 //GETTING A USER
 const getaUser = asyncHandler(async(req, res) => {
@@ -154,7 +148,6 @@ const updateaUser = asyncHandler(async(req, res) => {
 
 });
 
-
 //DELETE A USER
 const deleteaUser = asyncHandler(async(req, res) => {
     const {id} = req.params;
@@ -167,9 +160,6 @@ const deleteaUser = asyncHandler(async(req, res) => {
     }
 
 });
-
-
-
 
 //BLOCK A USER
 const blockUser = asyncHandler(async(req, res) => {
@@ -190,7 +180,6 @@ try {
 }
 });
 
-
 //UNBLOCK A USER
 const unBlockUser = asyncHandler(async(req, res) => {
     const {id} = req.params;
@@ -210,12 +199,12 @@ const unBlockUser = asyncHandler(async(req, res) => {
     }
 });
 
-
+//UPDATE PASSWORD
 const updatePassword = asyncHandler(async (req, res) => {
     const {_id} = req.user;
     const {password} = req.body;
     validateMongoDbId(_id);
-    const user = await user.findById(_id);
+    const user = await User.findById(_id);
     if(password){
         user.password = password;
         const updatedPassword = await user.save();
@@ -224,6 +213,47 @@ const updatePassword = asyncHandler(async (req, res) => {
         res.json(user);
     }
 });
+
+//FORGOT PASSWORD TOKEN
+const forgotPasswordToken = asyncHandler(async (req, res) => {
+    const {email} = req.body;
+    const user = await User.findOne({email});
+    if(!user) throw new Error("User not found with this email address");
+    try {
+        const token = await user.createPasswordResetToken();
+        await user.save();
+        const resetURL = "Hi, Please follow this link to reset your password. This link is valid for 10 minutes from now. <a href='http://localhost:5000/api/user/forgot-password-token> Reset Password </a>'";
+        const data = {
+            to: email,
+            text: "Hey User",
+            subject: "Frogot Password Link",
+            htm: resetURL,
+        };
+
+        sendEmail(data);
+        res.json(token);
+    } catch (error) {
+        throw new Error(error);
+    }
+});
+
+//RESET PASSWORD
+const resetPassword = asyncHandler(async (req, res) => {
+    const {password} = req.body;
+    const {token} = req.params;
+    const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
+    const user = await User.findOne({
+        passwordResetToken: hashedToken,
+        passwordResetExpires: {$gt: Date.now()},
+    });
+    if(!user) throw new Error("Token Expired, Please try again later");
+    user.password = password;
+    user.passwordResetToken = undefined;
+    user.passwordResetExpires = undefined;
+    await user.save();
+    res.json(user);
+});
+
 
 
 module.exports = {
@@ -238,4 +268,6 @@ module.exports = {
     handleRefreshToken,
     logout,
     updatePassword,
+    forgotPasswordToken,
+    resetPassword,
 };
