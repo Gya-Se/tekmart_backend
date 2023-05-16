@@ -1,9 +1,9 @@
 //IMPORTING LIBRABRIES FROM OTHER DIRECTORIES
 const User = require("../models/user.models");
 const asyncHandler = require("express-async-handler");
-const { generateToken } = require("../../config/jwtToken");
-const validateMongoDbId = require("../../utils/validateMongoDbId");
-const { generateRefreshToken } = require("../../config/refreshToken");
+const { generateToken } = require("../config/jwtToken");
+const validateMongoDbId = require("../utils/validateMongoDbId");
+const { generateRefreshToken } = require("../config/refreshToken");
 const jwt = require("jsonwebtoken");
 const sendEmail = require("./email.controller");
 const crypto = require("crypto");
@@ -220,13 +220,13 @@ const forgotPasswordToken = asyncHandler(async (req, res) => {
     const user = await User.findOne({email});
     if(!user) throw new Error("User not found with this email address");
     try {
-        var token = await user.createPasswordResetToken();
+        const token = await user.createPasswordResetToken();
         await user.save();
-        const resetURL = "Hi, Please follow this link to reset your password. This link is valid for 10 minutes from now. <a href='http://localhost:5000/api/user/reset-password/'" + {token}+ "> Reset Password </a>";
+        const resetURL = "Hi, Please follow this link to reset your password. This link is valid for 10 minutes from now. <a href='http://localhost:5000/api/user/reset-password/`${token}'> Reset Password </a>";
         const data = {
             to: email,
             text: "Hey User",
-            subject: "Frogot Password Link",
+            subject: "Forgot Password Link",
             htm: resetURL,
         };
 
@@ -241,10 +241,12 @@ const forgotPasswordToken = asyncHandler(async (req, res) => {
 const resetPassword = asyncHandler(async (req, res) => {
     const {password} = req.body;
     const {token} = req.params;
-    const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
+    //const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
+    //console.log(hashedToken);
+    //console.log(token);
     const user = await User.findOne({
-        passwordResetToken: hashedToken,
-        passwordResetExpires: {$gt: Date.now()},
+        passwordResetToken: token,
+        //passwordResetExpires: {$gt: Date.now()},
     });
     if(!user) throw new Error("Token Expired, Please try again later");
     user.password = password;

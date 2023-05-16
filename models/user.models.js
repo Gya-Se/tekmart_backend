@@ -65,10 +65,10 @@ UserSchema.methods.isPasswordMatched = async function (enteredPassword) {
 UserSchema.methods.createPasswordResetToken = async function () {
     const resettoken = crypto.randomBytes(32).toString("hex");
     this.passwordResetToken = crypto.createHash("sha256").update(resettoken).digest("hex");
-    this.passwordExpires = Date.now() + 30 + 60 + 1000; //10 Minutes
+    this.passwordResetExpires = Date.now() + 30 + 60 + 1000; //10 Minutes
     return resettoken;
 }
 
 
 //EXPORTING MODULE TO BE USED OUTSIDE DIRECTORY
-module.exports = mongoose.model ("User", UserSchema)
+module.exports = mongoose.model ("User", UserSchema);
