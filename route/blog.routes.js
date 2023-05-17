@@ -12,8 +12,8 @@ const router = express.Router();
 
 
 router.post("/create-blog", authMiddleware, isAdmin, createBlog);
-router.put("/like", authMiddleware, isAdmin, likeBlog);
-router.put("/dislike", authMiddleware, isAdmin, dislikeBlog);
+router.put("/like", authMiddleware, likeBlog);
+router.put("/dislike", authMiddleware, dislikeBlog);
 router.put("/update-blog/:id", authMiddleware, isAdmin, updateBlog);
 router.get("/get-blog/:id", getBlog);
 router.get("/get-all-blog", getAllBlogs);

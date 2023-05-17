@@ -62,7 +62,7 @@ const deleteBlog = asyncHandler(async(req, res) => {
     const {id} = req.params;
     validateMongoDbId(id);
     try {
-        const deleteBlog = await User.findByIdAndDelete(id);
+        const deleteBlog = await Blog.findByIdAndDelete(id);
         res.json({deleteBlog})
     } catch (error) {
         throw new Error(error);
