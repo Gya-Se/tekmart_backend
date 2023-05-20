@@ -1,7 +1,10 @@
-const Product = require("../models/product.models");
+const Product = require("../models/product.model");
+const User = require("../models/user.model");
 const asyncHandler = require("express-async-handler");
 const slugify = require("slugify");
-
+const fs = require("fs");
+const validateMongoDbId = require("../utils/validateMongoDbId");
+const cloudinaryUploadImg = require("../utils/cloudinary.utils");
 
 //CREATE A PRODUCT
 const createProduct = asyncHandler( async(req, res) => {
@@ -17,11 +20,10 @@ const createProduct = asyncHandler( async(req, res) => {
     }
 });
 
-
-
 //UPDATE A PRODUCT
 const updateProduct = asyncHandler( async(req, res) => {
-    const {id} = req.params;
+    const { id } = req.params;
+    validateMongoDbId(id);
     try {
         if(req.body.title){
             req.body.slug = slugify(req.body.title);
@@ -34,13 +36,10 @@ const updateProduct = asyncHandler( async(req, res) => {
     }
 });
 
-
-
-
-
 //DELETE A PRODUCT
 const deleteProduct = asyncHandler( async(req, res) => {
-    const {id} = req.params;
+    const { id } = req.params;
+    validateMongoDbId(id);
     try {
         if(req.body.title){
             req.body.slug = slugify(req.body.title);
@@ -53,12 +52,10 @@ const deleteProduct = asyncHandler( async(req, res) => {
     }
 });
 
-
-
-
 //GET A PRODUCT
 const getaProduct = asyncHandler( async(req, res) => {
-    const {id} = req.params;
+    const { id } = req.params;
+    validateMongoDbId(id);
     try {
         const findProduct = await Product.findById(id)
         res.json(findProduct);
@@ -67,7 +64,6 @@ const getaProduct = asyncHandler( async(req, res) => {
         throw new Error (error)
     }
 });
-
 
 //GET ALL PRODUCT
 const getallProduct = asyncHandler( async(req, res) => {
@@ -82,8 +78,6 @@ const getallProduct = asyncHandler( async(req, res) => {
 
         let query = Product.find(JSON.parse(queryStr));
 
-
-
         //SORTING
         if(req.query.sort){
             const sortBy = req.query.sort.split(",").join(" ");
@@ -92,8 +86,6 @@ const getallProduct = asyncHandler( async(req, res) => {
             query = query.sort("-createdAt");
         }
 
-
-
         //LIMITING THE FIELDS
         if(req.query.fields){
         const fields = req.query.fields.split(",").join(" ");
@@ -101,8 +93,6 @@ const getallProduct = asyncHandler( async(req, res) => {
         } else {
             query = query.select("-__V");
         }
-
-
 
         //PAGINATION
         const page = req.query.page;
@@ -116,9 +106,6 @@ const getallProduct = asyncHandler( async(req, res) => {
         }
         console.log(page, limit, skip);
 
-
-
-
         const product = await query;
         res.json(product);
 
@@ -127,7 +114,120 @@ const getallProduct = asyncHandler( async(req, res) => {
     }
 });
 
+//ADD TO WISHLIST
+const addToWishlist = asyncHandler( async(req, res) => {
+    const {id} = req.user;
+    const { prodId } = req.body;
+    validateMongoDbId(id);
+    try {
+        const user = await User.findById(id);
+        const alreadyAdded = user.wishlist.find((id) => id.toString() === prodId);
+        if(alreadyAdded){
+            let user = await User.findByIdAndUpdate(id, {
+                $pull: {wishlist: prodId},
+            },
+            {
+                new: true,
+            });
+            res.json(user);
+        }
+        else {
+            let user = await User.findByIdAndUpdate(id, {
+                $push: {wishlist: prodId},
+            },
+            {
+                new: true,
+            });
+            res.json(user);
+        }
+    } catch (error) {
+        throw new Error(error);
+    }
+});
 
+
+//RATING
+const rating = asyncHandler (async (req, res) => {
+    const { id } = req.user;
+    validateMongoDbId(id);
+    const {star, prodId, comment} = req.body;
+    try {
+        const product = await Product.findById(prodId);
+        let alreadyRated = product.ratings.find(
+            (userId) =>  userId.postedby.toString() === id.toString()
+        );
+        if(alreadyRated){
+            const updateRating = await Product.updateOne(
+                {
+                    ratings: {$elemMatch: alreadyRated},
+                },
+                {
+                    $set: {"ratings.$.star": star, "ratings.$.comment": comment}
+                },
+                {
+                    new: true,
+                }
+                );
+                res.json(updateRating);
+        } else {
+            const rateProduct = await Product.findByIdAndUpdate(
+                prodId, {
+                    $push: {
+                        ratings: {
+                            star: star,
+                            comment: comment,
+                            postedby: id,
+                        },
+                    },
+                },
+                {new: true},
+            );
+            res.json(rateProduct);
+        };
+
+        const getallRatings = await Product.findById(prodId);
+        let totalRating = getallRatings.ratings.length;
+        let ratingSum = getallRatings.ratings.map((item )=> item.star).reduce((prev, curr) => prev + curr, 0);
+        let actualRating = Math.round(ratingSum / totalRating);
+        let finalProduct = await Product.findByIdAndUpdate(
+            prodId,
+            {
+                totalRating: actualRating,
+            },
+            {
+                new: true,
+            }
+        );
+        res.json(finalProduct);
+    } catch (error) {
+        throw new Error(error);
+    }
+});
+
+//UPLOAD IMAGES
+const uploadImages = asyncHandler(async (req, res) => {
+    const { id } = req.params;
+    validateMongoDbId(id);
+    try {
+        const uploader = (path) => cloudinaryUploadImg(path, "images");
+        const urls = [];
+        const files = req.files;
+        for (const file of files) {
+            const { path } = file;
+            const newpath = await uploader(path);
+            urls.push(newpath);
+            fs.unlinkSync(path);
+        }
+        const findProduct = await Product.findByIdAndUpdate(id, {
+            images: urls.map((file) => {
+                return file;
+            }),
+        }, { new: true });
+        res.json(findProduct);
+    } catch (error) {
+        throw new Error(error);
+    }
+});
 
 //FILTER PRODUCT
 // const filterProduct = asyncHandler( async(req, res) => {
@@ -158,4 +258,13 @@ const getallProduct = asyncHandler( async(req, res) => {
 
 
 
-module.exports = {createProduct, getaProduct, getallProduct, updateProduct, deleteProduct};
+module.exports = {
+    createProduct, 
+    getaProduct, 
+    getallProduct, 
+    updateProduct, 
+    deleteProduct,
+    addToWishlist,
+    rating,
+    uploadImages
+};

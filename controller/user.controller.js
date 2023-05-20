@@ -1,5 +1,7 @@
 //IMPORTING LIBRABRIES FROM OTHER DIRECTORIES
-const User = require("../models/user.models");
+const User = require("../models/user.model");
+const Product = require("../models/product.model");
+const Cart = require("../models/cart.model");
 const asyncHandler = require("express-async-handler");
 const { generateToken } = require("../config/jwtToken");
 const validateMongoDbId = require("../utils/validateMongoDbId");
@@ -47,6 +49,39 @@ const loginCtrl =  asyncHandler( async(req, res) => {
             last_name: findUser?.last_name,
             email: findUser?.email,
             token: generateToken(findUser?._id)
+            });
+    }
+    else {
+        throw new Error ("Invalid Credentials");
+    }
+
+});
+
+//ADMIN LOGIN AND PASSWORD AUTHENTICATION
+const adminLogin =  asyncHandler( async(req, res) => {
+    const {email, password} = req.body;
+
+    const findAdmin = await User.findOne({ email });
+    if (findAdmin.role !== "admin") throw new Error("Not Authorised");
+    if(findAdmin && (await findAdmin.isPasswordMatched(password))){
+        const refreshToken = await generateRefreshToken(findAdmin?._id);
+        const updateuser = await User.findByIdAndUpdate(findAdmin?.id, {
+            refreshToken: refreshToken,
+        }, 
+        {new: true});
+
+        res.cookie("refreshToken", refreshToken, {
+            httpOnly: true,
+            maxAge: 72 * 60 * 60 * 1000,
+            secure: false,
+        });
+
+        res.json({ 
+            _id: findAdmin?._id,
+            first_name: findAdmin?.first_name,
+            last_name: findAdmin?.last_name,
+            email: findAdmin?.email,
+            token: generateToken(findAdmin?._id)
             });
     }
     else {
@@ -222,7 +257,7 @@ const forgotPasswordToken = asyncHandler(async (req, res) => {
     try {
         const token = await user.createPasswordResetToken();
         await user.save();
-        const resetURL = "Hi, Please follow this link to reset your password. This link is valid for 10 minutes from now. <a href='http://localhost:5000/api/user/reset-password/`${token}'> Reset Password </a>";
+        const resetURL = "Hi, Please follow this link to reset your password. This link is valid for 10 minutes from now. <a href= 'http://localhost:5000/api/user/reset-password/`${token}`'> Reset Password </a>";
         const data = {
             to: email,
             text: "Hey User",
@@ -241,12 +276,13 @@ const forgotPasswordToken = asyncHandler(async (req, res) => {
 const resetPassword = asyncHandler(async (req, res) => {
     const {password} = req.body;
     const {token} = req.params;
-    //const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
+    const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
     //console.log(hashedToken);
     //console.log(token);
     const user = await User.findOne({
-        passwordResetToken: token,
-        //passwordResetExpires: {$gt: Date.now()},
+        //passwordResetToken: token,
+        passwordResetToken: hashedToken,
+        passwordResetExpires: {$gt: Date.now()},
     });
     if(!user) throw new Error("Token Expired, Please try again later");
     user.password = password;
@@ -256,7 +292,94 @@ const resetPassword = asyncHandler(async (req, res) => {
     res.json(user);
 });
 
+//GET USERS WISHLIST
+const getWishlist = asyncHandler(async (req, res) => {
+    const { id } = req.user;
+    validateMongoDbId(id);
+    try {
+        const findUser = await User.findById(id).populate("wishlist");
+        res.json(findUser);
+    } catch (error) {
+        throw new Error(error);
+    }
+});
 
+//SAVE USERS ADDRESS
+const saveAddress = asyncHandler(async(req, res) => {
+    const {id} = req.user;
+    validateMongoDbId(id);
+    try {
+        const cNdUaddress= await User.findByIdAndUpdate(id,
+            {
+                address: req?.body?.address
+            }, {
+                new: true,
+            });
+        res.json({cNdUaddress})
+    } catch (error) {
+        throw new Error(error);
+    }
+
+});
+
+//USER CART
+const userCart = asyncHandler(async (req, res) => {
+    const { id } = req.user;
+    const { cart } = req.body;
+    validateMongoDbId(id);
+    try {
+        let products = [];
+        const user = await User.findById(id);
+        const alreadyInCart = await Cart.findOne({ orderby: User.id })
+        if (alreadyInCart) {
+            alreadyInCart.remove();
+        }
+        for (let i = 0; i < cart.length; i++){
+            let object = {};
+            object.product = cart[i].id;
+            object.count = cart[i].count;
+            object.color = cart[i].color;
+            let getPrice = await Product.findById(cart[i].id).select("price").exec();
+            object.price = getPrice.price;
+            products.push(object);
+        }
+        let cartTotal = 0;
+        for (let i = 0; i < products.length; i++) {
+            cartTotal = cartTotal + products[i].price + products[i].count;
+        }
+        let newCart = await new Cart({
+            products,
+            cartTotal,
+            orderby: user?.id,
+        }).save();
+        res.json(newCart);
+    } catch (error) {
+        throw new Error(error);
+    }
+});
+
+const getUserCart = asyncHandler(async (req, res) => {
+    const { id } = req.user;
+    validateMongoDbId(id);
+    try {
+        const cart = await Cart.findOne({ orderby: id }).populate("products.product");
+        res.json(cart);
+    } catch (error) {
+        throw new Error(error);
+    }
+});
+
+const emptyCart = asyncHandler(async (req, res) => {
+    const { id } = req.user;
+    validateMongoDbId(id);
+    try {
+        const user = await User.findOne({ id });
+        const cart = await Cart.findOneAndRemove({ orderby: user.id });
+        res.json(cart);
+    } catch (error) {
+        throw new Error(error);
+    }
+});
 
 module.exports = {
     updateaUser, 
@@ -272,4 +395,10 @@ module.exports = {
     updatePassword,
     forgotPasswordToken,
     resetPassword,
+    adminLogin,
+    getWishlist,
+    saveAddress,
+    userCart,
+    getUserCart,
+    emptyCart,
 };

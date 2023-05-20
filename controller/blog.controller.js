@@ -1,5 +1,5 @@
-const Blog = require("../models/blog.models");
-const User = require("../models/user.models");
+const Blog = require("../models/blog.model");
+const User = require("../models/user.model");
 const asyncHandler = require("express-async-handler");
 const validateMongoDbId = require("../utils/validateMongoDbId");
 
@@ -32,7 +32,7 @@ const getBlog = asyncHandler (async (req, res) => {
     const {id} = req.params;
     validateMongoDbId(id);
     try {
-        const getBlog = await Blog.findById(id);
+        const getBlog = await Blog.findById(id).populate("likes").populate("dislikes");
         const updateViews = await Blog.findByIdAndUpdate(
             id,
             {
@@ -41,7 +41,7 @@ const getBlog = asyncHandler (async (req, res) => {
             {
             new: true,
         });
-        res.json(updateViews);
+        res.json(getBlog);
     } catch (error) {
         throw new Error(error);
     }

@@ -8,6 +8,8 @@ const PORT = process.env.PORT || 3001;
 const authRouter = require("./route/auth.routes");
 const productRouter = require("./route/product.routes");
 const blogRouter = require("./route/blog.routes");
+const categoryRouter = require("./route/category.routes");
+const couponRouter = require("./route/coupon.routes");
 const { notFound, errorHandler } = require("./middlewares/customErrorHandler");
 const morgan = require("morgan");
 dbConnect();
@@ -22,6 +24,8 @@ app.use(cookieParser());
 app.use("/api/user", authRouter);
 app.use("/api/product", productRouter);
 app.use("/api/blog", blogRouter);
+app.use("/api/category", categoryRouter);
+app.use("/api/coupon", couponRouter);
 
 //ERROR HANDLERS
 app.use(notFound);
