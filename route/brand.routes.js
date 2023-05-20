@@ -4,7 +4,7 @@ const {
     getaBrand,
     getAllBrand,
     updateBrand,
-    deleteBrand, } = require("../controller/category.controller");
+    deleteBrand, } = require("../controller/brand.controller");
 const {
     authMiddleware,
     isAdmin } = require("../middlewares/authMiddleware");

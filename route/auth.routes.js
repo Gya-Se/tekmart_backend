@@ -1,4 +1,5 @@
 //IMPORTING METHODS FROM DIRECTORIES TO ROUTE
+const express = require("express");
 const {
     createUser, 
     userLogin,
