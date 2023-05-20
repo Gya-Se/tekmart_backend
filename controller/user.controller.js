@@ -1,7 +1,9 @@
-//IMPORTING LIBRABRIES FROM OTHER DIRECTORIES
+//IMPORTING LIBRABRIES AND METHODS FROM DIRECTORIES
 const User = require("../models/user.model");
 const Product = require("../models/product.model");
 const Cart = require("../models/cart.model");
+const Coupon = require("../models/coupon.model");
+const Order = require("../models/order.model");
 const asyncHandler = require("express-async-handler");
 const { generateToken } = require("../config/jwtToken");
 const validateMongoDbId = require("../utils/validateMongoDbId");
@@ -9,6 +11,7 @@ const { generateRefreshToken } = require("../config/refreshToken");
 const jwt = require("jsonwebtoken");
 const sendEmail = require("./email.controller");
 const crypto = require("crypto");
+const uniqid = require('uniqid');
 
 //CREATING A USER
 const createUser = asyncHandler( async(req, res) => {
@@ -18,7 +21,6 @@ const createUser = asyncHandler( async(req, res) => {
             const newUser = await User.create(req.body);
             res.json({newUser});
         }
-    
         else {
             throw new Error("User Already Exist");
         }
@@ -26,9 +28,8 @@ const createUser = asyncHandler( async(req, res) => {
 );
 
 //USER LOGIN AND PASSWORD AUTHENTICATION
-const loginCtrl =  asyncHandler( async(req, res) => {
+const userLogin =  asyncHandler( async(req, res) => {
     const {email, password} = req.body;
-
     const findUser = await User.findOne({email: email});
     if(findUser && (await findUser.isPasswordMatched(password))){
         const refreshToken = await generateRefreshToken(findUser?._id);
@@ -36,13 +37,11 @@ const loginCtrl =  asyncHandler( async(req, res) => {
             refreshToken: refreshToken,
         }, 
         {new: true});
-
         res.cookie("refreshToken", refreshToken, {
             httpOnly: true,
             maxAge: 72 * 60 * 60 * 1000,
             secure: false,
         });
-
         res.json({ 
             _id: findUser?._id,
             first_name: findUser?.first_name,
@@ -54,13 +53,11 @@ const loginCtrl =  asyncHandler( async(req, res) => {
     else {
         throw new Error ("Invalid Credentials");
     }
-
 });
 
 //ADMIN LOGIN AND PASSWORD AUTHENTICATION
 const adminLogin =  asyncHandler( async(req, res) => {
     const {email, password} = req.body;
-
     const findAdmin = await User.findOne({ email });
     if (findAdmin.role !== "admin") throw new Error("Not Authorised");
     if(findAdmin && (await findAdmin.isPasswordMatched(password))){
@@ -69,13 +66,11 @@ const adminLogin =  asyncHandler( async(req, res) => {
             refreshToken: refreshToken,
         }, 
         {new: true});
-
         res.cookie("refreshToken", refreshToken, {
             httpOnly: true,
             maxAge: 72 * 60 * 60 * 1000,
             secure: false,
         });
-
         res.json({ 
             _id: findAdmin?._id,
             first_name: findAdmin?.first_name,
@@ -87,25 +82,48 @@ const adminLogin =  asyncHandler( async(req, res) => {
     else {
         throw new Error ("Invalid Credentials");
     }
+});
 
+//SELLER LOGIN AND PASSWORD AUTHENTICATION
+const sellerLogin =  asyncHandler( async(req, res) => {
+    const {email, password} = req.body;
+    const findSeller = await User.findOne({ email });
+    if (findSeller.role !== "seller") throw new Error("Not Authorised");
+    if(findSeller && (await findSeller.isPasswordMatched(password))){
+        const refreshToken = await generateRefreshToken(findSeller?._id);
+        const updateuser = await User.findByIdAndUpdate(findSeller?.id, {
+            refreshToken: refreshToken,
+        }, 
+        {new: true});
+        res.cookie("refreshToken", refreshToken, {
+            httpOnly: true,
+            maxAge: 72 * 60 * 60 * 1000,
+            secure: false,
+        });
+        res.json({ 
+            _id: findSeller?._id,
+            first_name: findSeller?.first_name,
+            last_name: findSeller?.last_name,
+            email: findSeller?.email,
+            token: generateToken(findSeller?._id)
+            });
+    }
+    else {
+        throw new Error ("Invalid Credentials");
+    }
 });
 
 //HANDLE REFRESH TOKEN
 const handleRefreshToken = asyncHandler(async(req, res) => {
     const cookie = req.cookies;
     if(!cookie?.refreshToken) throw new Error ("No Refresh Token in Cookies");
-
     const refreshToken = cookie.refreshToken;
     const user = await User.findOne({refreshToken});
-
-
     if(!user) throw new Error ("No Refresh Token present or matched");
-
     jwt.verify(refreshToken, process.env.JWT_SECRET, (err, decoded) => {
         if(err || user.id !== decoded.id){
             throw new Error ("There is something wrong with refresh token");
         }
-        
         const accessToken = generateToken(user?._id);
         res.json({accessToken});
     });
@@ -115,11 +133,8 @@ const handleRefreshToken = asyncHandler(async(req, res) => {
 const logout = asyncHandler(async(req, res) => {
     const cookie = req.cookies;
     if(!cookie?.refreshToken) throw new Error ("No Refresh Token in Cookies");
-
     const refreshToken = cookie.refreshToken;
     const user = await User.findOne({refreshToken});
-
-
     if(!user){
         res.clearCookie("refreshToken", {
             httpOnly:true,
@@ -127,7 +142,6 @@ const logout = asyncHandler(async(req, res) => {
         });
         return res.sendStatus(204); //FORBIDDEN
     };
-
 await User.findOneAndUpdate(refreshToken, {
     refreshToken: "",
 });
@@ -135,7 +149,6 @@ res.clearCookie("refreshToken", {
     httpOnly:true,
     secure: true,
 });
-
 res.sendStatus(204); //FORBIDDEN
 });
 
@@ -147,7 +160,6 @@ const getAllUsers = asyncHandler(async(req, res) => {
     } catch (error) {
         throw new Error(error);
     }
-
 });
 
 //GETTING A USER
@@ -160,7 +172,6 @@ const getaUser = asyncHandler(async(req, res) => {
     } catch (error) {
         throw new Error(error);
     }
-
 });
 
 //UPDATE A USER
@@ -180,7 +191,6 @@ const updateaUser = asyncHandler(async(req, res) => {
     } catch (error) {
         throw new Error(error);
     }
-
 });
 
 //DELETE A USER
@@ -193,7 +203,6 @@ const deleteaUser = asyncHandler(async(req, res) => {
     } catch (error) {
         throw new Error(error);
     }
-
 });
 
 //BLOCK A USER
@@ -264,7 +273,6 @@ const forgotPasswordToken = asyncHandler(async (req, res) => {
             subject: "Forgot Password Link",
             htm: resetURL,
         };
-
         sendEmail(data);
         res.json(token);
     } catch (error) {
@@ -319,7 +327,6 @@ const saveAddress = asyncHandler(async(req, res) => {
     } catch (error) {
         throw new Error(error);
     }
-
 });
 
 //USER CART
@@ -358,6 +365,7 @@ const userCart = asyncHandler(async (req, res) => {
     }
 });
 
+//GET USER CART
 const getUserCart = asyncHandler(async (req, res) => {
     const { id } = req.user;
     validateMongoDbId(id);
@@ -369,6 +377,7 @@ const getUserCart = asyncHandler(async (req, res) => {
     }
 });
 
+//USER EMPTY CART
 const emptyCart = asyncHandler(async (req, res) => {
     const { id } = req.user;
     validateMongoDbId(id);
@@ -381,10 +390,116 @@ const emptyCart = asyncHandler(async (req, res) => {
     }
 });
 
+//APPLY COUPON
+const applyCoupon = asyncHandler(async (req, res) => {
+    const { coupon } = req.body;
+    const { id } = req.user;
+    validateMongoDbId(id);
+    try {
+        const validCoupon = await Coupon.findOne({ name: coupon });
+        if (validCoupon == null) {
+            throw new Error("Invalid Coupon");
+        }
+        const user = await User.findOne({ id });
+        let {cartTotal} = await Cart.findOne({
+            orderby: user.id,
+        }).populate("products.product");
+        let totalAfterDiscount = (cartTotal - (cartTotal * validCoupon.discount) / 100).toFixed(2);
+        await Cart.findOneAndUpdate(
+            { orderby: user.id },
+            { totalAfterDiscount },
+            { new: true }
+        );
+        res.json(totalAfterDiscount);
+    } catch (error) {
+        throw new Error(error);
+    }
+});
+
+//CREATE ORDER
+const createOrder = asyncHandler(async (req, res) => {
+    const { cashOnDel, couponApplied } = req.body;
+    const { id } = req.user;
+    validateMongoDbId(id);
+    try {
+        if (!cashOnDel) throw new Error("Creating Cash on Delivery Failed");
+        const user = await User.findById(id);
+        const userCart = await Cart.findOne({ orderby: user.id });
+        let finalAmount = 0;
+        if (couponApplied && userCart.totalAfterDiscount) {
+            finalAmount = userCart.totalAfterDiscount;
+        }
+        else {
+            finalAmount = userCart.cartTotal;
+        }
+        let newOrder = await new Order({
+            products: userCart.products,
+            paymentIntent: {
+                id: uniqid(),
+                method: "cashOnDel",
+                amount: finalAmount,
+                status: "Cash On Delivery",
+                created: Date.now(),
+                currency: "GHC",
+            },
+            orderby: user.id,
+            orderStatus: "Processing",
+        }).save();
+        let update = userCart.products.map((item) => {
+            return {
+                updateOne: {
+                    filter: { id: item.product.id },
+                    update: { $inc: { quantity: -item.count, sold: +item.count } },
+                },
+            };
+        });
+        const updated = Product.bulkWrite(update, {});
+        res.json({ message: "success" });
+    } catch (error) {
+        throw new Error(error);
+    }
+});
+
+//USER GET ORDERS 
+const getOrders = asyncHandler(async (req, res) => {
+    const { id } = req.user;
+    validateMongoDbId(id);
+    try {
+        const userOrders = await Order.findOne({ orderby: id }).populate("products.product").exec();
+        res.json(userOrders);
+    } catch (error) {
+        throw new Error(error);
+    }
+});
+
+//UPDATE ORDER STATUS
+const updateOrderStatus = asyncHandler(async (req, res) => {
+    const { status} = req.body;
+    const { id } = req.user;
+    validateMongoDbId(id);
+    try {
+        const updateOrdStatus = await Order.findByIdAndUpdate(
+            id,
+            {
+                orderStatus: status,
+                paymentIntent: {
+                    status: status,
+                },
+            }, {
+                new: true,
+            },
+       )
+        res.json(updateOrdStatus);
+    } catch (error) {
+        throw new Error(error);
+    }
+});
+
+//EXPORT MODULES
 module.exports = {
     updateaUser, 
     createUser, 
-    loginCtrl, 
+    userLogin, 
     getAllUsers, 
     getaUser, 
     deleteaUser,
@@ -396,9 +511,14 @@ module.exports = {
     forgotPasswordToken,
     resetPassword,
     adminLogin,
+    sellerLogin,
     getWishlist,
     saveAddress,
     userCart,
     getUserCart,
     emptyCart,
+    applyCoupon,
+    createOrder,
+    getOrders,
+    updateOrderStatus
 };

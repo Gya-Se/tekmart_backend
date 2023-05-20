@@ -33,4 +33,14 @@ const isAdmin  = asyncHandler (async (req, res, next) => {
     }
 });
 
-module.exports = {authMiddleware, isAdmin};
+const isSeller  = asyncHandler (async (req, res, next) => {
+    const {email} = req.user;
+    const sellerUser = await User.findOne({email});
+
+    if(sellerUser.role !== "seller"){
+       throw new Error("You are not a seller");
+    } else {
+        next();
+    }
+});
+module.exports = {authMiddleware, isAdmin, isSeller};

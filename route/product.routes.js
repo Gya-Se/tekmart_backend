@@ -1,3 +1,4 @@
+//IMPORTING METHODS FROM DIRECTORIES TO ROUTE
 const express = require("express");
 const { 
     createProduct, 
@@ -8,21 +9,30 @@ const {
     rating,
     addToWishlist,
     uploadImages, } = require("../controller/product.controller");
+const {
+    isAdmin,
+    authMiddleware, 
+    isSeller} = require("../middlewares/authMiddleware");
+const {
+    uploadPhoto,
+    productImgResize } = require("../middlewares/uploadImages");     
 const router = express.Router();
-const {isAdmin, authMiddleware} = require("../middlewares/authMiddleware");
-const { uploadPhoto, productImgResize } = require("../middlewares/uploadImages");
 
-
-
-router.post("/create-product", authMiddleware, isAdmin, createProduct);
-router.post("/pload/:id", authMiddleware, isAdmin, 
-    uploadPhoto.array("images", 10), productImgResize, uploadImages);
-router.get("/get-product/:id", getaProduct);
-router.post("/wishlist", authMiddleware, isAdmin, addToWishlist);
+//POST ROUTE
+router.post("/create-product", authMiddleware, isSeller, createProduct);
+router.post("/upload/:id", authMiddleware, isSeller, uploadPhoto.array("images", 5), productImgResize, uploadImages);
+router.post("/wishlist", authMiddleware, addToWishlist);
 router.post("/rating", authMiddleware, rating);
 
-router.put("/update-product/:id", authMiddleware, isAdmin, updateProduct);
-router.delete("/delete-product/:id", authMiddleware, isAdmin, deleteProduct);
+//GET ROUTE
+router.get("/get-product/:id", getaProduct);
 router.get("/get-all-product", getallProduct);
 
+//PUT ROUTE
+router.put("/update-product/:id", authMiddleware, isSeller, updateProduct);
+
+//DELETE ROUTE
+router.delete("/delete-product/:id", authMiddleware, isSeller, deleteProduct);
+
+//EXPORT ROUTE
 module.exports = router;

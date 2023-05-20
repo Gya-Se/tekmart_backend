@@ -1,5 +1,7 @@
 const express = require("express");
-const { authMiddleware, isAdmin } = require("../middlewares/authMiddleware");
+const {
+    authMiddleware,
+    isAdmin } = require("../middlewares/authMiddleware");
 const { 
     createBlog, 
     updateBlog, 
