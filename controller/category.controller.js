@@ -4,8 +4,8 @@ const validateMongoDbId = require("../utils/validateMongoDbId");
 
 //CREATE A CATEGORY
 const createCategory = asyncHandler( async(req, res) => {
-    // const { id } = req.user;
-    // validateMongoDbId(id);
+    const { id } = req.user;
+    validateMongoDbId(id);
     try {
         const newCategory = await Category.create(req.body);
         res.json(newCategory);
@@ -20,7 +20,7 @@ const updateCategory = asyncHandler( async(req, res) => {
     const { id } = req.params;
     validateMongoDbId(id);
     try {
-        const updateCategory = await Category.findOneAndUpdate(id, req.body, {new: true});
+        const updateCategory = await Category.findByIdAndUpdate(id, req.body, {new: true});
         res.json(updateCategory);
 
     } catch (error) {

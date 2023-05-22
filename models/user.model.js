@@ -5,23 +5,47 @@ const crypto = require("crypto");
 
 //CREATING A USER MODEL SCHEMA
 const UserSchema = new mongoose.Schema({
-    first_name: {
+    firstname: {
         type: String,
-        required: true
+        required: [true, "Enter your first name!"]
     },
-    last_name: {
+    lastname: {
         type: String,
-        required: true
+        required:  [true, "Enter your last name!"]
     },
     email: {
         type: String,
-        required: true,
-        unique: true
+        required:  [true, "Enter your email!"],
+        unique: true,
+    },
+    phoneNumber:{
+        type: Number,
     },
     password: {
         type: String,
-        required: true
+        required: [true, "Enter your password!"],
+        minLength: [8, "Password should be more than eight (8) characters"],
+        select: false,
     },
+    address: [
+        {
+        name:{
+            type: String,
+        },
+        address:{
+            type: String,
+        },
+        town:{
+            type: String,
+        },
+        phoneNumber:{
+            type: Number,
+        },
+        addressType:{
+            type: String,
+        },
+    }
+],
     role: {
         type: String,
         default: "user"
@@ -34,7 +58,10 @@ const UserSchema = new mongoose.Schema({
         type: Array,
         default: []
     },
-    address: [{type: mongoose.Schema.Types.ObjectId, ref: "Address"}],
+    avatar:{
+        type: String,
+        // required: true, //WILL BE SET TO REQUIRED LATER
+     },
     wishlist: [{type: mongoose.Schema.Types.ObjectId, ref: "Product"}],
     refreshToken: {
         type: String,

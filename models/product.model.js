@@ -7,52 +7,47 @@ var ProductSchema = new mongoose.Schema({
         required: true,
         trim: true,
     },
-
     slug:{
         type: String,
         required: true,
         unique: true,
         lowercase: true,
     },
-
     description:{
         type: String,
-        required: true,
+        required: [true, "Enter your product description!"],
     },
-
     price:{
         type: Number,
         required: true,
     },
-
+    tags: {
+        type: String,
+      },
     category:{
         type: String,
-        required: true,
+        required: [true, "Enter product category!"],
     },
-
     brand:{
         type: String,
         required: true,
     },
-
     quantity: {
         type: Number,
-        required: true,
-    },
-
+        required: [true, "Enter product quantity!"],
+      },
     sold: {
         type: Number,
         default: 0,
     },
-
-    images: [],
-
+    images: [{
+        type: String,
+    },],
     color: {
         type: String,
         required: true,
     },
-
-    ratings: {
+    review: {
         star: Number,
         comment: String,
         postedby: {
@@ -60,10 +55,18 @@ var ProductSchema = new mongoose.Schema({
             ref: "User"
         },
     },
-    totalrating: {
+    rating: {
         type: String,
         default: 0,
     },
+    shopId: {
+        type: String,
+        required: true,
+      },
+      shop: {
+        type: Object,
+        required: true,
+      },
 },
 {timestamps: true}
 );

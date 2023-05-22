@@ -7,7 +7,6 @@ const dotenv = require("dotenv").config();
 const PORT = process.env.PORT || 3001;
 const authRouter = require("./route/auth.routes");
 const productRouter = require("./route/product.routes");
-const blogRouter = require("./route/blog.routes");
 const categoryRouter = require("./route/category.routes");
 const couponRouter = require("./route/coupon.routes");
 const brandRouter = require("./route/brand.routes");
@@ -24,7 +23,6 @@ app.use(cookieParser());
 //API CONNECTIONS
 app.use("/api/user", authRouter);
 app.use("/api/product", productRouter);
-app.use("/api/blog", blogRouter);
 app.use("/api/category", categoryRouter);
 app.use("/api/brand", brandRouter);
 app.use("/api/coupon", couponRouter);

@@ -20,7 +20,7 @@ const updateBrand = asyncHandler( async(req, res) => {
     const { id } = req.params;
     validateMongoDbId(id);
     try {
-        const updateBrand = await Brand.findOneAndUpdate(id, req.body, {new: true});
+        const updateBrand = await Brand.findByIdAndUpdate(id, req.body, {new: true});
         res.json(updateBrand);
 
     } catch (error) {
