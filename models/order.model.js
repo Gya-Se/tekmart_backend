@@ -13,7 +13,17 @@ var OrderSchema = new mongoose.Schema({
     //         price: Number,
     //     }
      ],
-    paymentIntent:{},
+    paymentIntent: {
+        id:{
+            type: String,
+        },
+        status: {
+            type: String,
+        },
+        type:{
+            type: String,
+        },
+    },
     orderStatus:{
         // type: String,
         // default: "Not Processed",
@@ -28,7 +38,10 @@ var OrderSchema = new mongoose.Schema({
     orderby: {
         // type: mongoose.Schema.Types.ObjectId,
         // ref: "User"
-    }
+    },
+    deliveredAt: {
+        type: Date,
+    },
 }, {timestamps: true});
 
 //Export the model

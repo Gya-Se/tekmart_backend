@@ -24,7 +24,7 @@ const UserSchema = new mongoose.Schema({
     password: {
         type: String,
         required: [true, "Enter your password!"],
-        minLength: [8, "Password should be more than eight (8) characters"],
+        minLength: [8, "Password should be more than seven (7) characters"],
         select: false,
     },
     address: [
@@ -61,7 +61,7 @@ const UserSchema = new mongoose.Schema({
     avatar:{
         type: String,
         // required: true, //WILL BE SET TO REQUIRED LATER
-     },
+    },
     wishlist: [{type: mongoose.Schema.Types.ObjectId, ref: "Product"}],
     refreshToken: {
         type: String,
@@ -70,7 +70,6 @@ const UserSchema = new mongoose.Schema({
     passwordResetToken: String,
     passwordResetExpires: Date,
 }, {timestamps: true});
-
 
 //ENCRYPTING PASSWORD
 UserSchema.pre("save", async function (next) {
@@ -81,12 +80,10 @@ UserSchema.pre("save", async function (next) {
     this.password = await bcrypt.hash(this.password, salt);
 });
 
-
 //COMPARING ENTERED PASSWORD TO A PASSWORD IN DATABASE IN ENCRYPTION MODE
 UserSchema.methods.isPasswordMatched = async function (enteredPassword) {
     return await bcrypt.compare(enteredPassword, this.password)
 }
-
 
 //RESETTING PASSWORD IN DATABASE
 UserSchema.methods.createPasswordResetToken = async function () {
@@ -95,7 +92,6 @@ UserSchema.methods.createPasswordResetToken = async function () {
     this.passwordResetExpires = Date.now() + 30 + 60 + 1000; //10 Minutes
     return resettoken;
 }
-
 
 //EXPORTING MODULE TO BE USED OUTSIDE DIRECTORY
 module.exports = mongoose.model ("User", UserSchema);

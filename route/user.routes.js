@@ -3,7 +3,6 @@ const express = require("express");
 const {
     createUser, 
     userLogin,
-    adminLogin,
     sellerLogin,
     updatePassword,
     forgotPasswordToken,
@@ -27,7 +26,7 @@ const {
     updateOrderStatus, } = require("../controller/user.controller");
 const {
     authMiddleware,
-    isAdmin, } = require("../middlewares/authMiddleware");
+    isSeller, } = require("../middlewares/authMiddleware");
 const router = express.Router();
 
 //POST ROUTE
@@ -35,24 +34,23 @@ router.post("/register", createUser);
 router.post("/forgot-password-token", forgotPasswordToken);
 //Here
 router.post("/user-login", userLogin);
-router.post("/admin-login", adminLogin);
 router.post("/seller-login", sellerLogin);
 router.post("/cart", authMiddleware, userCart);
 router.post("/cart/apply-coupon", authMiddleware, applyCoupon);
 router.post("/cart/create-order", authMiddleware, createOrder);
 
 //GET ROUTE
-router.get("/getallusers", authMiddleware, isAdmin, getAllUsers);
+router.get("/getallusers", authMiddleware, isSeller, getAllUsers);
 router.get("/get-orders", authMiddleware, getOrders);
 router.get("/refresh", handleRefreshToken); 
 router.get("/logout", logout); 
 router.get("/wishlist", authMiddleware, getWishlist);
 router.get("/cart", authMiddleware, getUserCart);
-router.get("/:id", authMiddleware, isAdmin, getaUser);
+router.get("/:id", authMiddleware, isSeller, getaUser);
 
 //DELETE ROUTE
 router.delete("/empty-cart", authMiddleware, emptyCart);
-router.delete("/:id", authMiddleware, isAdmin, deleteaUser);
+router.delete("/:id", authMiddleware, isSeller, deleteaUser);
 
 //PUT ROUTE
 //There
@@ -62,8 +60,8 @@ router.put("/password", authMiddleware, updatePassword);
 //There
 router.put("/edit", authMiddleware, updateaUser); 
 router.put("/save-address", authMiddleware, saveAddress); 
-router.put("/block-user/:id", authMiddleware, isAdmin, blockUser); 
-router.put("/unblock-user/:id", authMiddleware, isAdmin, unBlockUser); 
+router.put("/block-user/:id", authMiddleware, isSeller, blockUser); 
+router.put("/unblock-user/:id", authMiddleware, isSeller, unBlockUser); 
 
 //EXPORT ROUTE
 module.exports = router;

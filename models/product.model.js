@@ -30,22 +30,22 @@ var ProductSchema = new mongoose.Schema({
     },
     brand:{
         type: String,
-        required: true,
+        required: [true, "Enter product brand!"]
     },
     quantity: {
         type: Number,
         required: [true, "Enter product quantity!"],
       },
+      images: [{
+          type: String,
+      },],
+      color: {
+          type: String,
+          required: true,
+      },
     sold: {
         type: Number,
         default: 0,
-    },
-    images: [{
-        type: String,
-    },],
-    color: {
-        type: String,
-        required: true,
     },
     review: {
         star: Number,
@@ -63,10 +63,10 @@ var ProductSchema = new mongoose.Schema({
         type: String,
         required: true,
       },
-      shop: {
-        type: Object,
-        required: true,
-      },
+    //   shop: {
+    //     type: Object,
+    //     required: true,
+    //   },
 },
 {timestamps: true}
 );

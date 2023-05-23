@@ -44,39 +44,10 @@ const userLogin =  asyncHandler( async(req, res) => {
         });
         res.json({ 
             _id: findUser?._id,
-            first_name: findUser?.first_name,
-            last_name: findUser?.last_name,
+            firstname: findUser?.firstname,
+            lastname: findUser?.lastname,
             email: findUser?.email,
             token: generateToken(findUser?._id)
-            });
-    }
-    else {
-        throw new Error ("Invalid Credentials");
-    }
-});
-
-//ADMIN LOGIN AND PASSWORD AUTHENTICATION
-const adminLogin =  asyncHandler( async(req, res) => {
-    const {email, password} = req.body;
-    const findAdmin = await User.findOne({ email });
-    if (findAdmin.role !== "admin") throw new Error("Not Authorised");
-    if(findAdmin && (await findAdmin.isPasswordMatched(password))){
-        const refreshToken = await generateRefreshToken(findAdmin?._id);
-        const updateuser = await User.findByIdAndUpdate(findAdmin?.id, {
-            refreshToken: refreshToken,
-        }, 
-        {new: true});
-        res.cookie("refreshToken", refreshToken, {
-            httpOnly: true,
-            maxAge: 72 * 60 * 60 * 1000,
-            secure: false,
-        });
-        res.json({ 
-            _id: findAdmin?._id,
-            first_name: findAdmin?.first_name,
-            last_name: findAdmin?.last_name,
-            email: findAdmin?.email,
-            token: generateToken(findAdmin?._id)
             });
     }
     else {
@@ -102,8 +73,8 @@ const sellerLogin =  asyncHandler( async(req, res) => {
         });
         res.json({ 
             _id: findSeller?._id,
-            first_name: findSeller?.first_name,
-            last_name: findSeller?.last_name,
+            firstname: findSeller?.firstname,
+            lastname: findSeller?.lastname,
             email: findSeller?.email,
             token: generateToken(findSeller?._id)
             });
@@ -510,7 +481,6 @@ module.exports = {
     updatePassword,
     forgotPasswordToken,
     resetPassword,
-    adminLogin,
     sellerLogin,
     getWishlist,
     saveAddress,

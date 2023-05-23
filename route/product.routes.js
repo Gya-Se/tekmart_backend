@@ -10,7 +10,6 @@ const {
     addToWishlist,
     uploadImages, } = require("../controller/product.controller");
 const {
-    isAdmin,
     authMiddleware, 
     isSeller} = require("../middlewares/authMiddleware");
 const {

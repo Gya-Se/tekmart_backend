@@ -21,26 +21,14 @@ if(req?.headers?.authorization.startsWith("Bearer")){
 }
 });
 
-
-const isAdmin  = asyncHandler (async (req, res, next) => {
-    const {email} = req.user;
-    const adminUser = await User.findOne({email});
-
-    if(adminUser.role !== "admin"){
-       throw new Error("You are not an admin");
-    } else {
-        next();
-    }
-});
-
 const isSeller  = asyncHandler (async (req, res, next) => {
     const {email} = req.user;
     const sellerUser = await User.findOne({email});
-
     if(sellerUser.role !== "seller"){
        throw new Error("You are not a seller");
     } else {
         next();
     }
 });
-module.exports = {authMiddleware, isAdmin, isSeller};
+
+module.exports = {authMiddleware, isSeller};

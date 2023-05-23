@@ -4,7 +4,7 @@ const mongoose = require('mongoose'); // Erase if already required
 var CouponSchema = new mongoose.Schema({
     name:{
         type: String,
-        required: true,
+        required: [true,"Please enter your coupoun code name!"],
         unique: true,
         uppercase: true,
     },
@@ -16,6 +16,10 @@ var CouponSchema = new mongoose.Schema({
         type: Number,
         required: true,
     },
+    shopId:{
+        type: String,
+        required: true,
+       },
 });
 
 //Export the model

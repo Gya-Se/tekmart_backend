@@ -5,11 +5,10 @@ const dbConnect = require("./config/dbConnection");
 const app = express();
 const dotenv = require("dotenv").config();
 const PORT = process.env.PORT || 3001;
-const authRouter = require("./route/auth.routes");
+const userRouter = require("./route/user.routes");
+const sellerRouter = require("./route/seller.routes");
 const productRouter = require("./route/product.routes");
-const categoryRouter = require("./route/category.routes");
 const couponRouter = require("./route/coupon.routes");
-const brandRouter = require("./route/brand.routes");
 const { notFound, errorHandler } = require("./middlewares/customErrorHandler");
 const morgan = require("morgan");
 dbConnect();
@@ -21,10 +20,9 @@ app.use(bodyParser.urlencoded({extend: false}));
 app.use(cookieParser());
 
 //API CONNECTIONS
-app.use("/api/user", authRouter);
+app.use("/api/user", userRouter);
+app.use("/api/seller", sellerRouter);
 app.use("/api/product", productRouter);
-app.use("/api/category", categoryRouter);
-app.use("/api/brand", brandRouter);
 app.use("/api/coupon", couponRouter);
 
 //ERROR HANDLERS
