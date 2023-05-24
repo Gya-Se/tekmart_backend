@@ -1,5 +1,6 @@
 const Product = require("../models/product.model");
 const User = require("../models/user.model");
+const Seller = require("../models/shop.model")
 const asyncHandler = require("express-async-handler");
 const slugify = require("slugify");
 const fs = require("fs");
@@ -153,7 +154,7 @@ const rating = asyncHandler (async (req, res) => {
     const {star, prodId, comment} = req.body;
     try {
         const product = await Product.findById(prodId);
-        let alreadyRated = product.ratings.find(
+        let alreadyRated = product.review.find(
             (userId) =>  userId.postedby.toString() === id.toString()
         );
         if(alreadyRated){
@@ -228,34 +229,6 @@ const uploadImages = asyncHandler(async (req, res) => {
         throw new Error(error);
     }
 });
-
-//FILTER PRODUCT
-// const filterProduct = asyncHandler( async(req, res) => {
-//     const {minprice, maxprice, color, category, availability, brand} = req.params;
-//     console.log(req.query);
-
-//     try {
-//         const filterProduct = await Product.find({
-//             price: {
-//                 $gte: minprice,
-//                 $lte: maxprice,
-//             },
-//             category,
-//             brand,
-//             color,
-//             availability,
-//         });
-//         res.json(filterProduct);
-
-//     } catch (error) {
-//         throw new Error (error)
-//     }
-
-//     res.json({
-//         minprice, maxprice, category, brand,color, availability, 
-//     })
-// });
-
 
 
 module.exports = {

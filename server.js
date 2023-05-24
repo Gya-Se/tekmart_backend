@@ -1,16 +1,16 @@
-const express = require("express");
-const bodyParser = require("body-parser");
-const cookieParser = require("cookie-parser");
-const dbConnect = require("./config/dbConnection");
-const app = express();
-const dotenv = require("dotenv").config();
-const PORT = process.env.PORT || 3001;
-const userRouter = require("./route/user.routes");
-const sellerRouter = require("./route/seller.routes");
+const { notFound, errorHandler } = require("./middlewares/customErrorHandler");
 const productRouter = require("./route/product.routes");
 const couponRouter = require("./route/coupon.routes");
-const { notFound, errorHandler } = require("./middlewares/customErrorHandler");
+const dbConnect = require("./config/dbConnection");
+const sellerRouter = require("./route/seller.routes");
+const userRouter = require("./route/user.routes");
+const cookieParser = require("cookie-parser");
+const bodyParser = require("body-parser");
+const dotenv = require("dotenv").config();
+const PORT = process.env.PORT || 3001;
+const express = require("express");
 const morgan = require("morgan");
+const app = express();
 dbConnect();
 
 //PARSERs

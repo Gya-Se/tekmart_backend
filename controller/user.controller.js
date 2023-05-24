@@ -33,7 +33,7 @@ const userLogin =  asyncHandler( async(req, res) => {
     const findUser = await User.findOne({email: email});
     if(findUser && (await findUser.isPasswordMatched(password))){
         const refreshToken = await generateRefreshToken(findUser?._id);
-        const updateuser = await User.findByIdAndUpdate(findUser?.id, {
+        const updateuser = await User.findByIdAndUpdate(findUser?._id, {
             refreshToken: refreshToken,
         }, 
         {new: true});
@@ -48,35 +48,6 @@ const userLogin =  asyncHandler( async(req, res) => {
             lastname: findUser?.lastname,
             email: findUser?.email,
             token: generateToken(findUser?._id)
-            });
-    }
-    else {
-        throw new Error ("Invalid Credentials");
-    }
-});
-
-//SELLER LOGIN AND PASSWORD AUTHENTICATION
-const sellerLogin =  asyncHandler( async(req, res) => {
-    const {email, password} = req.body;
-    const findSeller = await User.findOne({ email });
-    if (findSeller.role !== "seller") throw new Error("Not Authorised");
-    if(findSeller && (await findSeller.isPasswordMatched(password))){
-        const refreshToken = await generateRefreshToken(findSeller?._id);
-        const updateuser = await User.findByIdAndUpdate(findSeller?.id, {
-            refreshToken: refreshToken,
-        }, 
-        {new: true});
-        res.cookie("refreshToken", refreshToken, {
-            httpOnly: true,
-            maxAge: 72 * 60 * 60 * 1000,
-            secure: false,
-        });
-        res.json({ 
-            _id: findSeller?._id,
-            firstname: findSeller?.firstname,
-            lastname: findSeller?.lastname,
-            email: findSeller?.email,
-            token: generateToken(findSeller?._id)
             });
     }
     else {
@@ -123,28 +94,6 @@ res.clearCookie("refreshToken", {
 res.sendStatus(204); //FORBIDDEN
 });
 
-//GETTING ALL USERS
-const getAllUsers = asyncHandler(async(req, res) => {
-    try {
-        const getUsers = await User.find();
-        res.json(getUsers)
-    } catch (error) {
-        throw new Error(error);
-    }
-});
-
-//GETTING A USER
-const getaUser = asyncHandler(async(req, res) => {
-    const {id} = req.params;
-    validateMongoDbId(id);
-    try {
-        const getaUser = await User.findById(id);
-        res.json({getaUser})
-    } catch (error) {
-        throw new Error(error);
-    }
-});
-
 //UPDATE A USER
 const updateaUser = asyncHandler(async(req, res) => {
     const {id} = req.user;
@@ -165,50 +114,12 @@ const updateaUser = asyncHandler(async(req, res) => {
 });
 
 //DELETE A USER
-const deleteaUser = asyncHandler(async(req, res) => {
-    const {id} = req.params;
+const deleteAuser = asyncHandler(async(req, res) => {
+    const {id} = req.user;
     validateMongoDbId(id);
     try {
         const deleteaUser = await User.findByIdAndDelete(id);
         res.json({deleteaUser})
-    } catch (error) {
-        throw new Error(error);
-    }
-});
-
-//BLOCK A USER
-const blockUser = asyncHandler(async(req, res) => {
-const {id} = req.params;
-validateMongoDbId(id);
-try {
-    const block = await User.findByIdAndUpdate(id, {
-        isBlocked: true,
-    },
-    {
-        new: true,
-    });
-    res.json({
-        message: "User blocked",
-    });
-} catch (error) {
-    throw new Error(error);
-}
-});
-
-//UNBLOCK A USER
-const unBlockUser = asyncHandler(async(req, res) => {
-    const {id} = req.params;
-    validateMongoDbId(id);
-    try {
-        const unblock = await User.findByIdAndUpdate(id, {
-            isBlocked: false,
-        },
-        {
-            new: true,
-        });
-        res.json({
-            message: "User unblocked",
-        });
     } catch (error) {
         throw new Error(error);
     }
@@ -237,7 +148,7 @@ const forgotPasswordToken = asyncHandler(async (req, res) => {
     try {
         const token = await user.createPasswordResetToken();
         await user.save();
-        const resetURL = `Hi, Please follow this link to reset your password. This link is valid for 10 minutes from now. <a href= 'http://localhost:5000/api/user/reset-password/${token}> Reset Password </a>`;
+        const resetURL = `Hi, Please follow this link to reset your password. This link is valid for 10 minutes from now. <a href= http://localhost:5000/api/user/reset-password/${token}> Reset Password </a>`;
         const data = {
             to: email,
             text: "Hey User",
@@ -271,7 +182,7 @@ const resetPassword = asyncHandler(async (req, res) => {
     res.json(user);
 });
 
-//GET USERS WISHLIST
+//GET USER WISHLIST
 const getWishlist = asyncHandler(async (req, res) => {
     const { id } = req.user;
     validateMongoDbId(id);
@@ -283,7 +194,7 @@ const getWishlist = asyncHandler(async (req, res) => {
     }
 });
 
-//SAVE USERS ADDRESS
+//SAVE AND UPDATE ADDRESS
 const saveAddress = asyncHandler(async(req, res) => {
     const {id} = req.user;
     validateMongoDbId(id);
@@ -420,7 +331,7 @@ const createOrder = asyncHandler(async (req, res) => {
             return {
                 updateOne: {
                     filter: { id: item.product.id },
-                    update: { $inc: { quantity: -item.count, sold: +item.count } },
+                    update: { $inc: { quantity: -item.count, sold: + item.count } },
                 },
             };
         });
@@ -443,45 +354,18 @@ const getOrders = asyncHandler(async (req, res) => {
     }
 });
 
-//UPDATE ORDER STATUS
-const updateOrderStatus = asyncHandler(async (req, res) => {
-    const { status} = req.body;
-    const { id } = req.user;
-    validateMongoDbId(id);
-    try {
-        const updateOrdStatus = await Order.findByIdAndUpdate(
-            id,
-            {
-                orderStatus: status,
-                paymentIntent: {
-                    status: status,
-                },
-            }, {
-                new: true,
-            },
-       )
-        res.json(updateOrdStatus);
-    } catch (error) {
-        throw new Error(error);
-    }
-});
+
 
 //EXPORT MODULES
 module.exports = {
     updateaUser, 
     createUser, 
     userLogin, 
-    getAllUsers, 
-    getaUser, 
-    deleteaUser,
-    blockUser,
-    unBlockUser,
     handleRefreshToken,
     logout,
     updatePassword,
     forgotPasswordToken,
     resetPassword,
-    sellerLogin,
     getWishlist,
     saveAddress,
     userCart,
@@ -490,5 +374,5 @@ module.exports = {
     applyCoupon,
     createOrder,
     getOrders,
-    updateOrderStatus
+    deleteAuser
 };

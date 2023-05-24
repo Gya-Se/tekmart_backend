@@ -20,6 +20,11 @@ var ShopSchema = new mongoose.Schema({
     minLength: [8, "Password should be more than seven (7) characters"],
     select: false,
   },
+  phoneNumber: {
+    type: String,
+    required: [true, "Enter your Number"],
+    minLength: [10, "Number should be more than nine (9) characters"],
+  },
   description: {
     type: String,
   },
@@ -33,13 +38,9 @@ var ShopSchema = new mongoose.Schema({
   },
   }
   ],
-  phoneNumber: {
-    type: Number,
-    required: true,
-  },
   role: {
     type: String,
-    default: "Seller",
+    default: "seller",
   },
   avatar: {
     type: String,

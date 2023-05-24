@@ -29,11 +29,11 @@ const createSeller = asyncHandler( async(req, res) => {
 //SELLER LOGIN AND PASSWORD AUTHENTICATION
 const sellerLogin =  asyncHandler( async(req, res) => {
     const {email, password} = req.body;
-    const findSeller = await Seller.findOne({ email });
-    if (findSeller.role !== "seller") throw new Error("Not Authorised");
-    if(findSeller && (await findSeller.isPasswordMatched(password))){
-        const refreshToken = await generateRefreshToken(findSeller?.id);
-        const updateseller = await Seller.findByIdAndUpdate(findSeller?.id, {
+    const seller = await Seller.findOne({ email: email });
+    if (seller.role !== "seller") throw new Error("Not Authorised");
+    if(seller && (await seller.isPasswordMatched(password))){
+        const refreshToken = await generateRefreshToken(seller?._id);
+        const updateseller = await Seller.findByIdAndUpdate(seller?._id, {
             refreshToken: refreshToken,
         }, 
         {new: true});
@@ -43,10 +43,10 @@ const sellerLogin =  asyncHandler( async(req, res) => {
             secure: false,
         });
         res.json({ 
-            id: findSeller?.id,
-            name: findSeller?.name,
-            email: findSeller?.email,
-            token: generateToken(findSeller?._id)
+            id: seller?._id,
+            name: seller?.name,
+            email: seller?.email,
+            token: generateToken(seller?._id)
             });
     }
     else {
@@ -93,7 +93,7 @@ res.clearCookie("refreshToken", {
 res.sendStatus(204); //FORBIDDEN
 });
 
-//USER  UPDATE DETAILS
+//SELLER  UPDATE DETAILS
 const updateAseller = asyncHandler(async(req, res) => {
     const {id} = req.user;
     validateMongoDbId(id);
@@ -106,6 +106,18 @@ const updateAseller = asyncHandler(async(req, res) => {
                 new: true,
             });
         res.json({updateaUser})
+    } catch (error) {
+        throw new Error(error);
+    }
+});
+
+//SELLER DELETE ACCOUNT
+const deleteAseller = asyncHandler(async(req, res) => {
+    const {id} = req.params;
+    validateMongoDbId(id);
+    try {
+        const deleteaUser = await User.findByIdAndDelete(id);
+        res.json({deleteaUser})
     } catch (error) {
         throw new Error(error);
     }
@@ -233,4 +245,5 @@ module.exports = {
     saveAddress,
     getOrders,
     updateOrderStatus,
+    deleteAseller
 };

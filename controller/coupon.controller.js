@@ -1,4 +1,5 @@
 const Coupon = require("../models/coupon.model");
+const Seller = require("../models/shop.model")
 const asyncHandler = require("express-async-handler");
 const validateMongoDbId = require("../utils/validateMongoDbId");
 
@@ -63,7 +64,6 @@ const getAllCoupons = asyncHandler(async(req, res) => {
     } catch (error) {
         throw new Error(error);
     }
-
 });
 
 
