@@ -15,7 +15,7 @@ const uniqid = require('uniqid');
 //CREATING A SELLER ACCOUNT
 const createSeller = asyncHandler( async(req, res) => {
         const email = req.body.email;
-        const findSeller = await Seller.findOne({email: email});
+        const findSeller = await Seller.findOne({email});
         if (!findSeller) { 
             const newSeller = await Seller.create(req.body);
             res.json({newSeller});
@@ -29,7 +29,7 @@ const createSeller = asyncHandler( async(req, res) => {
 //SELLER LOGIN AND PASSWORD AUTHENTICATION
 const sellerLogin =  asyncHandler( async(req, res) => {
     const {email, password} = req.body;
-    const seller = await Seller.findOne({ email: email });
+    const seller = await Seller.findOne({ email });
     if (seller.role !== "seller") throw new Error("Not Authorised");
     if(seller && (await seller.isPasswordMatched(password))){
         const refreshToken = await generateRefreshToken(seller?._id);

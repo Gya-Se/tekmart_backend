@@ -1,75 +1,46 @@
-const mongoose = require('mongoose'); // Erase if already required
+const mongoose = require('mongoose');
 
-// Declare the Schema of the Mongo model
-var ProductSchema = new mongoose.Schema({
-    title:{
-        type: String,
-        required: true,
-        trim: true,
+const ProductSchema = new mongoose.Schema({
+    vendor: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Vendor',
+      required: true
     },
-    slug:{
-        type: String,
-        required: true,
-        unique: true,
-        lowercase: true,
+    name: {
+      type: String,
+      required: true
     },
-    description:{
-        type: String,
-        required: [true, "Enter your product description!"],
+    description: {
+      type: String,
+      required: true
     },
-    price:{
-        type: Number,
-        required: true,
-    },
-    tags: {
-        type: String,
-      },
-    category:{
-        type: String,
-        required: [true, "Enter product category!"],
-    },
-    brand:{
-        type: String,
-        required: [true, "Enter product brand!"]
+    price: {
+      type: Number,
+      required: true
     },
     quantity: {
-        type: Number,
-        required: [true, "Enter product quantity!"],
-      },
-      images: [{
-          type: String,
-      },],
-      color: {
-          type: String,
-          required: true,
-      },
-    sold: {
-        type: Number,
-        default: 0,
+      type: Number,
+      required: true,
+      default: 0
     },
-    review: {
-        star: Number,
-        comment: String,
-        postedby: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: "User"
-        },
+    images: [{
+      type: String
+    }],
+    category: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Category',
+        required: true
     },
-    rating: {
-        type: String,
-        default: 0,
+    color: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Color',
+        required: true
     },
-    shopId: {
-        type: String,
-        required: true,
-      },
-    //   shop: {
-    //     type: Object,
-    //     required: true,
-    //   },
-},
-{timestamps: true}
-);
-
-//Export the model
+    brand: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Brand',
+        required: true
+    },
+  },{timestamps: true});
+  
 module.exports = mongoose.model('Product', ProductSchema);

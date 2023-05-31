@@ -1,8 +1,6 @@
 //IMPORTING METHODS FROM DIRECTORIES TO ROUTE
 const express = require("express");
-const {
-    authMiddleware,
-    isSeller } = require("../middlewares/authMiddleware");
+const { isSeller } = require("../middlewares/authMiddleware");
 const {
     createCoupon,
     getaCoupon,
@@ -12,17 +10,17 @@ const {
 const router = express.Router();
 
 //POST ROUTE
-router.post("/create-coupon", authMiddleware, isSeller, createCoupon);
+router.post("/create-coupon",  isSeller, createCoupon);
 
 //GET ROUTE
-router.get("/get-all-coupons", authMiddleware, isSeller, getAllCoupons);
-router.get("/get-coupon/:id", authMiddleware, isSeller, getaCoupon);
+router.get("/get-all-coupons", isSeller, getAllCoupons);
+router.get("/get-coupon/:id",  isSeller, getaCoupon);
 
 //PUT ROUTE
-router.put("/update-coupon/:id", authMiddleware, isSeller, updateCoupon);
+router.put("/update-coupon/:id",  isSeller, updateCoupon);
 
 //DELETE ROUTE
-router.delete("/delete-coupon/:id", authMiddleware, isSeller, deleteCoupon);
+router.delete("/delete-coupon/:id", isSeller, deleteCoupon);
 
 //EXPORT ROUTE
 module.exports = router;

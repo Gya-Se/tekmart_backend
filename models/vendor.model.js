@@ -4,8 +4,8 @@ const bcrypt = require("bcrypt");
 const crypto = require("crypto");
 
 //CREATING A SELLER MODEL SCHEMA
-var ShopSchema = new mongoose.Schema({
-  name: {
+var VendorSchema = new mongoose.Schema({
+  shopName: {
     type: String,
     required: [true, "Enter your shop name!"],
     unique: true,
@@ -18,7 +18,6 @@ var ShopSchema = new mongoose.Schema({
     type: String,
     required: [true, "Enter your password"],
     minLength: [8, "Password should be more than seven (7) characters"],
-    select: false,
   },
   phoneNumber: {
     type: String,
@@ -44,7 +43,7 @@ var ShopSchema = new mongoose.Schema({
   },
   avatar: {
     type: String,
-    // required: true, //WILL BE SET TO REQUIRED LATER
+    required: true, //WILL BE SET TO REQUIRED LATER
   },
   withdrawMethod: {
     type: Object,
@@ -71,7 +70,7 @@ var ShopSchema = new mongoose.Schema({
 }, { timestamps: true, });
 
 //ENCRYPTING PASSWORD
-ShopSchema.pre("save", async function (next) {
+VendorSchema.pre("save", async function (next) {
   if(!this.isModified("password")){
       next();
   };
@@ -80,12 +79,12 @@ ShopSchema.pre("save", async function (next) {
 });
 
 //COMPARING ENTERED PASSWORD TO A PASSWORD IN DATABASE IN ENCRYPTION MODE
-ShopSchema.methods.isPasswordMatched = async function (enteredPassword) {
+VendorSchema.methods.isPasswordMatched = async function (enteredPassword) {
   return await bcrypt.compare(enteredPassword, this.password)
 }
 
 //RESETTING PASSWORD IN DATABASE
-ShopSchema.methods.createPasswordResetToken = async function () {
+VendorSchema.methods.createPasswordResetToken = async function () {
   const resettoken = crypto.randomBytes(32).toString("hex");
   this.passwordResetToken = crypto.createHash("sha256").update(resettoken).digest("hex");
   this.passwordResetExpires = Date.now() + 30 + 60 + 1000; //10 Minutes
@@ -93,4 +92,4 @@ ShopSchema.methods.createPasswordResetToken = async function () {
 }
 
 //Export the model
-module.exports = mongoose.model('Shop', ShopSchema);
+module.exports = mongoose.model('Vendor', VendorSchema);

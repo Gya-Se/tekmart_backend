@@ -13,9 +13,7 @@ const {
     getOrders,
     updateOrderStatus,
     updateAseller } = require("../controller/seller.controller");
-const {
-    authMiddleware,
-    isSeller, } = require("../middlewares/authMiddleware");
+const {isSeller, } = require("../middlewares/authMiddleware");
 const router = express.Router();
 
 //POST ROUTE
@@ -24,20 +22,20 @@ router.post("/forgot-password-token", forgotPasswordToken);
 router.post("/login", sellerLogin);
 
 //GET ROUTE
-router.get("/get-orders", authMiddleware, isSeller, getOrders);
+router.get("/get-orders", isSeller, getOrders);
 router.get("/refresh", handleRefreshToken); 
 router.get("/logout", logout); 
 
 //DELETE ROUTE
-router.put("/delete/:id", authMiddleware, isSeller, deleteAseller);
+router.put("/delete/:id", isSeller, deleteAseller);
 
 
 //PUT ROUTE
-router.put("/reset-password/:token", authMiddleware, isSeller, resetPassword);
-router.put("/update-order/:id",authMiddleware, isSeller, updateOrderStatus);
-router.put("/update-password", authMiddleware, isSeller, updatePassword);
-router.put("/update-seller", authMiddleware, isSeller, updateAseller); 
-router.put("/save-address", authMiddleware, isSeller, saveAddress); 
+router.put("/reset-password/:token", isSeller, resetPassword);
+router.put("/update-order/:id", isSeller, updateOrderStatus);
+router.put("/update-password", isSeller, updatePassword);
+router.put("/update-seller", isSeller, updateAseller); 
+router.put("/save-address", isSeller, saveAddress); 
 
 //EXPORT ROUTE
 module.exports = router;

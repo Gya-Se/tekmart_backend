@@ -10,7 +10,7 @@ const {
     addToWishlist,
     uploadImages, } = require("../controller/product.controller");
 const {
-    authMiddleware, 
+    isUser, 
     isSeller} = require("../middlewares/authMiddleware");
 const {
     uploadPhoto,
@@ -18,20 +18,19 @@ const {
 const router = express.Router();
 
 //POST ROUTE
-router.post("/create-product", authMiddleware, isSeller, createProduct);
-router.post("/upload/:id", authMiddleware, isSeller, uploadPhoto.array("images", 5), productImgResize, uploadImages);
-router.post("/wishlist", authMiddleware, addToWishlist);
-router.post("/rating", authMiddleware, rating);
+router.post("/create-product", isSeller, createProduct);
+router.post("/upload/:id", isUser, isSeller, uploadPhoto.array("images", 5), productImgResize, uploadImages);
+router.post("/wishlist", isUser,  rating);
 
 //GET ROUTE
 router.get("/get-product/:id", getaProduct);
 router.get("/get-all-product", getallProduct);
 
 //PUT ROUTE
-router.put("/update-product/:id", authMiddleware, isSeller, updateProduct);
+router.put("/update-product/:id", isSeller, updateProduct);
 
 //DELETE ROUTE
-router.delete("/delete-product/:id", authMiddleware, isSeller, deleteProduct);
+router.delete("/delete-product/:id",  isSeller, deleteProduct);
 
 //EXPORT ROUTE
 module.exports = router;

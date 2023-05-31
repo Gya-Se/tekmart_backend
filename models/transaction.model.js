@@ -1,9 +1,14 @@
 const mongoose = require('mongoose');
 
-const OrderSchema = new mongoose.Schema({
+const TransactionSchema = new mongoose.Schema({
   user: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
+    required: true
+  },
+  vendor: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Vendor',
     required: true
   },
   products: [{
@@ -25,15 +30,15 @@ const OrderSchema = new mongoose.Schema({
     type: Number,
     required: true
   },
-  shippingAddress: {
+  paymentMethod: {
     type: String,
     required: true
   },
   status: {
     type: String,
-    enum: ['pending', 'confirmed', 'shipped', 'delivered'],
+    enum: ['pending', 'completed', 'cancelled'],
     default: 'pending'
   },
 },{timestamps: true});
 
-module.exports = mongoose.model('Order', OrderSchema);
+module.exports = mongoose.model('Transaction', TransactionSchema);
