@@ -1,7 +1,10 @@
 const { notFound, errorHandler } = require("./middlewares/customErrorHandler");
 const dbConnect = require("./config/dbConnection");
+
+//EXPORTING ROUTES
 const vendorRouter = require("./route/vendor.routes");
 const userRouter = require("./route/user.routes");
+const adminRouter = require("./route/admin.routes")
 const cookieParser = require("cookie-parser");
 const bodyParser = require("body-parser");
 const dotenv = require("dotenv");
@@ -21,8 +24,8 @@ app.use(cookieParser());
 
 //API CONNECTIONS
 app.use("/v1/api/user", userRouter);
-app.use("/v1/api/vendor", vendorRouter);
-app.use("/v1/api/admin", adminRouter);
+// app.use("/v1/api/vendor", vendorRouter);
+// app.use("/v1/api/admin", adminRouter);
 
 //ERROR HANDLERS
 app.use(notFound);

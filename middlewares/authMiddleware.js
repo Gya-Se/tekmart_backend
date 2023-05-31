@@ -39,5 +39,10 @@ const authenticateVendor = asyncHandler (async (req, res, next) => {
     } else {
         throw new Error("There is no token attached to header");
     }
-    });
+});
+    
+
+const authenticateAdmin = asyncHandler(async (req, res, next) =>{
+    
+})
 module.exports = {authenticateUser, authenticateVendor, authenticateAdmin};

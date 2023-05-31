@@ -27,72 +27,7 @@
 //     }
 // );
 
-// //USER LOGIN AND PASSWORD AUTHENTICATION
-// const userLogin =  asyncHandler( async(req, res) => {
-//     const {email, password} = req.body;
-//     const findUser = await User.findOne({email: email});
-//     if(findUser && (await findUser.isPasswordMatched(password))){
-//         const refreshToken = await generateRefreshToken(findUser?._id);
-//         const updateuser = await User.findByIdAndUpdate(findUser?._id, {
-//             refreshToken: refreshToken,
-//         },
-//         {new: true});
-//         res.cookie("refreshToken", refreshToken, {
-//             httpOnly: true,
-//             maxAge: 72 * 60 * 60 * 1000,
-//             secure: false,
-//         });
-//         res.json({
-//             _id: findUser?._id,
-//             firstname: findUser?.firstname,
-//             lastname: findUser?.lastname,
-//             email: findUser?.email,
-//             token: generateToken(findUser?._id)
-//             });
-//     }
-//     else {
-//         throw new Error ("Invalid Credentials");
-//     }
-// });
 
-// //HANDLE REFRESH TOKEN
-// const handleRefreshToken = asyncHandler(async(req, res) => {
-//     const cookie = req.cookies;
-//     if(!cookie?.refreshToken) throw new Error ("No Refresh Token in Cookies");
-//     const refreshToken = cookie.refreshToken;
-//     const user = await User.findOne({refreshToken});
-//     if(!user) throw new Error ("No Refresh Token present or matched");
-//     jwt.verify(refreshToken, process.env.JWT_SECRET, (err, decoded) => {
-//         if(err || user.id !== decoded.id){
-//             throw new Error ("There is something wrong with refresh token");
-//         }
-//         const accessToken = generateToken(user?._id);
-//         res.json({accessToken});
-//     });
-// });
-
-// //HANDLE LOGOUT
-// const logout = asyncHandler(async(req, res) => {
-//     const cookie = req.cookies;
-//     if(!cookie?.refreshToken) throw new Error ("No Refresh Token in Cookies");
-//     const refreshToken = cookie.refreshToken;
-//     const user = await User.findOne({refreshToken});
-//     if(!user){
-//         res.clearCookie("refreshToken", {
-//             httpOnly:true,
-//             secure: true,
-//         });
-//         return res.sendStatus(204); //FORBIDDEN
-//     };
-// await User.findOneAndUpdate(refreshToken, {
-//     refreshToken: "",
-// });
-// res.clearCookie("refreshToken", {
-//     httpOnly:true,
-//     secure: true,
-// });
-// res.sendStatus(204); //FORBIDDEN
-// });
 
 // //UPDATE A USER
 // const updateaUser = asyncHandler(async(req, res) => {
@@ -160,26 +95,6 @@
 //     } catch (error) {
 //         throw new Error(error);
 //     }
-// });
-
-// //RESET PASSWORD
-// const resetPassword = asyncHandler(async (req, res) => {
-//     const {password} = req.body;
-//     const {token} = req.params;
-//     const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
-//     //console.log(hashedToken);
-//     //console.log(token);
-//     const user = await User.findOne({
-//         //passwordResetToken: token,
-//         passwordResetToken: hashedToken,
-//         passwordResetExpires: {$gt: Date.now()},
-//     });
-//     if(!user) throw new Error("Token Expired, Please try again later");
-//     user.password = password;
-//     user.passwordResetToken = undefined;
-//     user.passwordResetExpires = undefined;
-//     await user.save();
-//     res.json(user);
 // });
 
 // //GET USER WISHLIST
@@ -377,14 +292,14 @@ const getUserById = asyncHandler(async (req, res) => {
 // Create a new user
 const createUser = asyncHandler(async (req, res) => {
   try {
-    const { name, email, password } = req.body;
+    const { firstname, lastname, email, phone, password } = req.body;
     // Check if user with the same email already exists
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res.status(400).json({ error: 'User with this email already exists' });
     }
     // Create new user
-    const newUser = new User({ name, email, password });
+    const newUser = new User({ firstname, lastname, email, phone, password });
     await newUser.save();
     res.json(newUser);
   } catch (error) {
@@ -424,11 +339,102 @@ const deleteUserById = asyncHandler(async (req, res) => {
     console.error(error);
     res.status(500).json({ error: 'Server error' });
   }
+
+ //USER LOGIN AND PASSWORD AUTHENTICATION
+const userLogin =  asyncHandler( async(req, res) => {
+    const {email, password} = req.body;
+    const findUser = await User.findOne({email: email});
+    if(findUser && (await findUser.isPasswordMatched(password))){
+        const refreshToken = await generateRefreshToken(findUser?._id);
+        const updateuser = await User.findByIdAndUpdate(findUser?._id, {
+            refreshToken: refreshToken,
+        },
+        {new: true});
+        res.cookie("refreshToken", refreshToken, {
+            httpOnly: true,
+            maxAge: 72 * 60 * 60 * 1000,
+            secure: false,
+        });
+        res.json({
+            _id: findUser?._id,
+            firstname: findUser?.firstname,
+            lastname: findUser?.lastname,
+            email: findUser?.email,
+            token: generateToken(findUser?._id)
+            });
+    }
+    else {
+        throw new Error ("Invalid Credentials");
+    }
+});
+
+//HANDLE REFRESH TOKEN
+const handleRefreshToken = asyncHandler(async(req, res) => {
+    const cookie = req.cookies;
+    if(!cookie?.refreshToken) throw new Error ("No Refresh Token in Cookies");
+    const refreshToken = cookie.refreshToken;
+    const user = await User.findOne({refreshToken});
+    if(!user) throw new Error ("No Refresh Token present or matched");
+    jwt.verify(refreshToken, process.env.JWT_SECRET, (err, decoded) => {
+        if(err || user.id !== decoded.id){
+            throw new Error ("There is something wrong with refresh token");
+        }
+        const accessToken = generateToken(user?._id);
+        res.json({accessToken});
+    }); 
+});
+
+//HANDLE LOGOUT
+const logout = asyncHandler(async(req, res) => {
+    const cookie = req.cookies;
+    if(!cookie?.refreshToken) throw new Error ("No Refresh Token in Cookies");
+    const refreshToken = cookie.refreshToken;
+    const user = await User.findOne({refreshToken});
+    if(!user){
+        res.clearCookie("refreshToken", {
+            httpOnly:true,
+            secure: true,
+        });
+        return res.sendStatus(204); //FORBIDDEN
+    };
+await User.findOneAndUpdate(refreshToken, {
+    refreshToken: "",
+});
+res.clearCookie("refreshToken", {
+    httpOnly:true,
+    secure: true,
+});
+res.sendStatus(204); //FORBIDDEN
+});
+});
+
+//RESET PASSWORD
+const resetPassword = asyncHandler(async (req, res) => {
+    const {password} = req.body;
+    const {token} = req.params;
+    const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
+    //console.log(hashedToken);
+    //console.log(token);
+    const user = await User.findOne({
+        //passwordResetToken: token,
+        passwordResetToken: hashedToken,
+        passwordResetExpires: {$gt: Date.now()},
+    });
+    if(!user) throw new Error("Token Expired, Please try again later");
+    user.password = password;
+    user.passwordResetToken = undefined;
+    user.passwordResetExpires = undefined;
+    await user.save();
+    res.json(user);
 });
 
 module.exports = {
   getUserById,
   createUser,
   updateUserById,
-  deleteUserById
+  deleteUserById,
+  userLogin,
+  handleRefreshToken,
+  logout,
+  resetPassword,
 };

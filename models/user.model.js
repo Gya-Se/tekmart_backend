@@ -1,105 +1,60 @@
-// //IMPORTING LIBRABRIES FROM OTHER DIRECTORIES
-// const mongoose = require("mongoose")
-// const bcrypt = require("bcrypt");
-// const crypto = require("crypto");
-
-// //CREATING A USER MODEL SCHEMA
-// const UserSchema = new mongoose.Schema({
-//     firstname: {
-//         type: String,
-//         required: [true, "Enter your first name!"]
-//     },
-//     lastname: {
-//         type: String,
-//         required:  [true, "Enter your last name!"]
-//     },
-//     email: {
-//         type: String,
-//         required:  [true, "Enter your email!"],
-//         unique: true,
-//     },
-//     phoneNumber:{
-//         type: Number,
-//     },
-//     password: {
-//         type: String,
-//         required: [true, "Enter your password!"],
-//         minLength: [8, "Password should be more than seven (7) characters"],
-//     },
-//     address: [
-//         {
-//         name:{
-//             type: String,
-//         },
-//         address:{
-//             type: String,
-//         },
-//         town:{
-//             type: String,
-//         },
-//         phoneNumber:{
-//             type: Number,
-//         },
-//         addressType:{
-//             type: String,
-//         },
-//     }
-// ],
-//     role: {
-//         type: String,
-//         default: "user"
-//     },
-//     cart: {
-//         type: Array,
-//         default: []
-//     },
-//     avatar:{
-//         type: String,
-//         // required: true, //WILL BE SET TO REQUIRED LATER
-//     },
-//     wishlist: [{type: mongoose.Schema.Types.ObjectId, ref: "Product"}],
-//     refreshToken: {
-//         type: String,
-//     },
-// }, {timestamps: true});
-// //EXPORTING MODULE TO BE USED OUTSIDE DIRECTORY
-// module.exports = mongoose.model ("User", UserSchema);
-
 const mongoose = require('mongoose');
 
 const UserSchema = new mongoose.Schema({
-  name: {
-    type: String,
-    required: true
+  firstname: {
+      type: String,
+      required: [true, "Enter your first name!"]
+  },
+  lastname: {
+      type: String,
+      required:  [true, "Enter your last name!"]
   },
   email: {
     type: String,
-    required: true,
+    required: [true, "Enter your email!"],
     unique: true
   },
   password: {
     type: String,
-    required: true
-  },
-  address: {
-    type: String,
-    required: true
+    required: true,
+    minLength: [8, "Password should not be less than eight characters!"]
   },
   phone: {
     type: String,
     required: true
   },
+  avatar: {
+    type: String,
+    required: true
+  },
+  address: {
+    name:{
+      type: String,
+    },
+    address:{
+        type: String,
+    },
+    town:{
+        type: String,
+    },
+    phoneNumber:{
+      type: String,
+      minLength: [10, "Phone number should not be less than ten!"],
+      maxLength: [10, "Phone number should not be more than ten!"]
+    },
+    addressType:{
+        type: String,
+    },
+  },
+
   role: {
     type: String,
     enum: ['customer', 'admin'],
     default: 'customer'
   },
-  profilePicture: {
-    type: String
-  },
-  socialMediaLinks: {
-    type: [String]
-  },
+    refreshToken: {
+        type: String,
+    },
     passwordChangedAt: Date,
     passwordResetToken: String,
     passwordResetExpires: Date,

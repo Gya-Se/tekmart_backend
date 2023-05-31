@@ -43,7 +43,7 @@ var VendorSchema = new mongoose.Schema({
   },
   avatar: {
     type: String,
-    required: true, //WILL BE SET TO REQUIRED LATER
+    required: true,
   },
   withdrawMethod: {
     type: Object,
@@ -64,6 +64,9 @@ var VendorSchema = new mongoose.Schema({
       },
     },
   ],
+  refreshToken: {
+    type: String,
+},
   passwordChangedAt: Date,
   passwordResetToken: String,
   passwordResetExpires: Date,
