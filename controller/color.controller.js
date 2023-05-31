@@ -1,7 +1,9 @@
-const Color = require('../models/Color');
+const Color = require('../models/color.model');
+const asyncHandler = require("express-async-handler");
+const validateMongoDbId = require("../utils/validateMongoDbId");
 
 // Get all colors
-const getAllColors = async (req, res) => {
+const getAllColors = asyncHandler (async (req, res) => {
   try {
     const colors = await Color.find();
     res.json(colors);
@@ -9,12 +11,13 @@ const getAllColors = async (req, res) => {
     console.error(error);
     res.status(500).json({ error: 'Server error' });
   }
-};
+});
 
 // Get color by ID
-const getColorById = async (req, res) => {
+const getColorById = asyncHandler (async (req, res) => {
+  const colorId = req.params.id;
+  validateMongoDbId(colorId);
   try {
-    const colorId = req.params.id;
     const color = await Color.findById(colorId);
     if (!color) {
       return res.status(404).json({ error: 'Color not found' });
@@ -24,10 +27,10 @@ const getColorById = async (req, res) => {
     console.error(error);
     res.status(500).json({ error: 'Server error' });
   }
-};
+});
 
 // Create a new color
-const createColor = async (req, res) => {
+const createColor = asyncHandler (async (req, res) => {
   try {
     const { name } = req.body;
     // Create new color
@@ -38,12 +41,13 @@ const createColor = async (req, res) => {
     console.error(error);
     res.status(500).json({ error: 'Server error' });
   }
-};
+});
 
 // Update color by ID
-const updateColorById = async (req, res) => {
+const updateColorById = asyncHandler (async (req, res) => {
+  const colorId = req.params.id;
+  validateMongoDbId(colorId);
   try {
-    const colorId = req.params.id;
     const updates = req.body;
     const updatedColor = await Color.findByIdAndUpdate(colorId, updates, { new: true });
     if (!updatedColor) {
@@ -54,12 +58,13 @@ const updateColorById = async (req, res) => {
     console.error(error);
     res.status(500).json({ error: 'Server error' });
   }
-};
+});
 
 // Delete color by ID
-const deleteColorById = async (req, res) => {
+const deleteColorById = asyncHandler (async (req, res) => {
+  const colorId = req.params.id;
+  validateMongoDbId(colorId);
   try {
-    const colorId = req.params.id;
     const deletedColor = await Color.findByIdAndDelete(colorId);
     if (!deletedColor) {
       return res.status(404).json({ error: 'Color not found' });
@@ -69,7 +74,7 @@ const deleteColorById = async (req, res) => {
     console.error(error);
     res.status(500).json({ error: 'Server error' });
   }
-};
+});
 
 module.exports = {
   getAllColors,

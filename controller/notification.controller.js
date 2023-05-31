@@ -1,21 +1,25 @@
-const Notification = require('../models/Notification');
+const Notification = require('../models/notification.model');
+const asyncHandler = require("express-async-handler");
+const validateMongoDbId = require("../utils/validateMongoDbId");
 
 // Get all notifications for a user
-const getUserNotifications = async (req, res) => {
+const getUserNotifications =asyncHandler (async (req, res) => {
+  const userId = req.params.userId;
+  validateMongoDbId(userId);
   try {
-    const userId = req.params.userId;
     const notifications = await Notification.find({ user: userId });
     res.json(notifications);
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Server error' });
   }
-};
+});
 
 // Mark notification as read
-const markNotificationAsRead = async (req, res) => {
+const markNotificationAsRead =asyncHandler (async (req, res) => {
+  const notificationId = req.params.id;
+  validateMongoDbId(notificationId);
   try {
-    const notificationId = req.params.id;
     const updatedNotification = await Notification.findByIdAndUpdate(
       notificationId,
       { isRead: true },
@@ -29,12 +33,13 @@ const markNotificationAsRead = async (req, res) => {
     console.error(error);
     res.status(500).json({ error: 'Server error' });
   }
-};
+});
 
 // Delete notification
-const deleteNotification = async (req, res) => {
+const deleteNotification =asyncHandler (async (req, res) => {
+  const notificationId = req.params.id;
+  validateMongoDbId(notificationId)
   try {
-    const notificationId = req.params.id;
     const deletedNotification = await Notification.findByIdAndDelete(notificationId);
     if (!deletedNotification) {
       return res.status(404).json({ error: 'Notification not found' });
@@ -44,7 +49,7 @@ const deleteNotification = async (req, res) => {
     console.error(error);
     res.status(500).json({ error: 'Server error' });
   }
-};
+});
 
 module.exports = {
   getUserNotifications,

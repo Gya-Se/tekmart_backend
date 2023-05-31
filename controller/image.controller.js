@@ -1,9 +1,12 @@
-const Image = require('../models/Image');
+const Image = require('../models/image.model');
+const asyncHandler = require("express-async-handler");
+const validateMongoDbId = require("../utils/validateMongoDbId");
 
 // Upload an image
-const uploadImage = async (req, res) => {
+const uploadImage = asyncHandler (async (req, res) => {
+  const { productId, imageUrl } = req.body;
+  validateMongoDbId(productId);
   try {
-    const { productId, imageUrl } = req.body;
     // Create new image
     const newImage = new Image({ productId, imageUrl });
     await newImage.save();
@@ -12,24 +15,26 @@ const uploadImage = async (req, res) => {
     console.error(error);
     res.status(500).json({ error: 'Server error' });
   }
-};
+});
 
 // Get all images for a product
-const getProductImages = async (req, res) => {
+const getProductImages = asyncHandler ( async (req, res) => {
+  const productId = req.params.productId;
+  validateMongoDbId(productId);
   try {
-    const productId = req.params.productId;
     const images = await Image.find({ productId });
     res.json(images);
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Server error' });
   }
-};
+});
 
 // Delete an image
-const deleteImage = async (req, res) => {
+const deleteImage = asyncHandler (async  (req, res) => {
+  const imageId = req.params.id;
+  validateMongoDbId(productId);
   try {
-    const imageId = req.params.id;
     const deletedImage = await Image.findByIdAndDelete(imageId);
     if (!deletedImage) {
       return res.status(404).json({ error: 'Image not found' });
@@ -39,7 +44,7 @@ const deleteImage = async (req, res) => {
     console.error(error);
     res.status(500).json({ error: 'Server error' });
   }
-};
+});
 
 module.exports = {
   uploadImage,

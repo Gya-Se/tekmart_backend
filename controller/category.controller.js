@@ -1,7 +1,9 @@
-const Category = require('../models/Category');
+const Category = require('../models/category.model');
+const asyncHandler = require("express-async-handler");
+const validateMongoDbId = require("../utils/validateMongoDbId");
 
 // Get all categories
-const getAllCategories = async (req, res) => {
+const getAllCategories = asyncHandler (async (req, res) => {
   try {
     const categories = await Category.find();
     res.json(categories);
@@ -9,12 +11,13 @@ const getAllCategories = async (req, res) => {
     console.error(error);
     res.status(500).json({ error: 'Server error' });
   }
-};
+});
 
 // Get category by ID
-const getCategoryById = async (req, res) => {
+const getCategoryById = asyncHandler (async (req, res) => {
+  const categoryId = req.params.id;
+  validateMongoDbId(categoryId);
   try {
-    const categoryId = req.params.id;
     const category = await Category.findById(categoryId);
     if (!category) {
       return res.status(404).json({ error: 'Category not found' });
@@ -24,10 +27,10 @@ const getCategoryById = async (req, res) => {
     console.error(error);
     res.status(500).json({ error: 'Server error' });
   }
-};
+});
 
 // Create a new category
-const createCategory = async (req, res) => {
+const createCategory = asyncHandler (async (req, res) => {
   try {
     const { name } = req.body;
     // Create new category
@@ -38,12 +41,13 @@ const createCategory = async (req, res) => {
     console.error(error);
     res.status(500).json({ error: 'Server error' });
   }
-};
+});
 
 // Update category by ID
-const updateCategoryById = async (req, res) => {
+const updateCategoryById = asyncHandler (async (req, res) => {
+  const categoryId = req.params.id;
+  validateMongoDbId(categoryId);
   try {
-    const categoryId = req.params.id;
     const updates = req.body;
     const updatedCategory = await Category.findByIdAndUpdate(categoryId, updates, { new: true });
     if (!updatedCategory) {
@@ -54,12 +58,13 @@ const updateCategoryById = async (req, res) => {
     console.error(error);
     res.status(500).json({ error: 'Server error' });
   }
-};
+});
 
 // Delete category by ID
-const deleteCategoryById = async (req, res) => {
+const deleteCategoryById = asyncHandler (async (req, res) => {
+  const categoryId = req.params.id;
+  validateMongoDbId(categoryId);
   try {
-    const categoryId = req.params.id;
     const deletedCategory = await Category.findByIdAndDelete(categoryId);
     if (!deletedCategory) {
       return res.status(404).json({ error: 'Category not found' });
@@ -69,7 +74,7 @@ const deleteCategoryById = async (req, res) => {
     console.error(error);
     res.status(500).json({ error: 'Server error' });
   }
-};
+});
 
 module.exports = {
   getAllCategories,

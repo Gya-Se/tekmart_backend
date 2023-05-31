@@ -1,7 +1,9 @@
-const Page = require('../models/Page');
+const Page = require('../models/page.model');
+const asyncHandler = require("express-async-handler");
+const validateMongoDbId = require("../utils/validateMongoDbId");
 
 // Get all pages
-const getAllPages = async (req, res) => {
+const getAllPages = asyncHandler (async (req, res) => {
   try {
     const pages = await Page.find();
     res.json(pages);
@@ -9,10 +11,10 @@ const getAllPages = async (req, res) => {
     console.error(error);
     res.status(500).json({ error: 'Server error' });
   }
-};
+});
 
 // Get page by slug
-const getPageBySlug = async (req, res) => {
+const getPageBySlug = asyncHandler (async (req, res) => {
   try {
     const slug = req.params.slug;
     const page = await Page.findOne({ slug });
@@ -24,10 +26,10 @@ const getPageBySlug = async (req, res) => {
     console.error(error);
     res.status(500).json({ error: 'Server error' });
   }
-};
+});
 
 // Create a new page
-const createPage = async (req, res) => {
+const createPage = asyncHandler (async (req, res) => {
   try {
     const { title, content, slug } = req.body;
     // Create new page
@@ -38,12 +40,13 @@ const createPage = async (req, res) => {
     console.error(error);
     res.status(500).json({ error: 'Server error' });
   }
-};
+});
 
 // Update a page
-const updatePage = async (req, res) => {
+const updatePage = asyncHandler (async (req, res) => {
+  const pageId = req.params.id;
+  validateMongoDbId(pageId);
   try {
-    const pageId = req.params.id;
     const { title, content, slug } = req.body;
     const updatedPage = await Page.findByIdAndUpdate(
       pageId,
@@ -58,12 +61,13 @@ const updatePage = async (req, res) => {
     console.error(error);
     res.status(500).json({ error: 'Server error' });
   }
-};
+});
 
 // Delete a page
-const deletePage = async (req, res) => {
+const deletePage = asyncHandler (async (req, res) => {
+  const pageId = req.params.id;
+  validateMongoDbId(pageId);
   try {
-    const pageId = req.params.id;
     const deletedPage = await Page.findByIdAndDelete(pageId);
     if (!deletedPage) {
       return res.status(404).json({ error: 'Page not found' });
@@ -73,7 +77,7 @@ const deletePage = async (req, res) => {
     console.error(error);
     res.status(500).json({ error: 'Server error' });
   }
-};
+});
 
 module.exports = {
   getAllPages,

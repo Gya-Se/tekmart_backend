@@ -354,12 +354,15 @@
 //     }
 // });
 
-const User = require('../models/User');
+const User = require('../models/user.model');
+const asyncHandler = require("express-async-handler");
+const validateMongoDbId = require("../utils/validateMongoDbId");
 
 // Get user by ID
-const getUserById = async (req, res) => {
+const getUserById = asyncHandler(async (req, res) => {
+  const userId = req.params.id;
+  validateMongoDbId(userId);
   try {
-    const userId = req.params.id;
     const user = await User.findById(userId);
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
@@ -369,10 +372,10 @@ const getUserById = async (req, res) => {
     console.error(error);
     res.status(500).json({ error: 'Server error' });
   }
-};
+});
 
 // Create a new user
-const createUser = async (req, res) => {
+const createUser = asyncHandler(async (req, res) => {
   try {
     const { name, email, password } = req.body;
     // Check if user with the same email already exists
@@ -388,12 +391,13 @@ const createUser = async (req, res) => {
     console.error(error);
     res.status(500).json({ error: 'Server error' });
   }
-};
+});
 
 // Update user by ID
-const updateUserById = async (req, res) => {
+const updateUserById = asyncHandler(async (req, res) => {
+  const userId = req.params.id;
+  validateMongoDbId(userId)
   try {
-    const userId = req.params.id;
     const updates = req.body;
     const updatedUser = await User.findByIdAndUpdate(userId, updates, { new: true });
     if (!updatedUser) {
@@ -404,12 +408,13 @@ const updateUserById = async (req, res) => {
     console.error(error);
     res.status(500).json({ error: 'Server error' });
   }
-};
+});
 
 // Delete user by ID
-const deleteUserById = async (req, res) => {
+const deleteUserById = asyncHandler(async (req, res) => {
+  const userId = req.params.id;
+  validateMongoDbId(userId);
   try {
-    const userId = req.params.id;
     const deletedUser = await User.findByIdAndDelete(userId);
     if (!deletedUser) {
       return res.status(404).json({ error: 'User not found' });
@@ -419,7 +424,7 @@ const deleteUserById = async (req, res) => {
     console.error(error);
     res.status(500).json({ error: 'Server error' });
   }
-};
+});
 
 module.exports = {
   getUserById,

@@ -1,11 +1,12 @@
-const Cart = require('../models/Cart');
+const Cart = require('../models/cart.model');
 const asyncHandler = require("express-async-handler");
+const validateMongoDbId = require("../utils/validateMongoDbId");
 
 // Get cart by user ID
-const getCartByUserId = asyncHandler(
-    async (req, res) => {
+const getCartByUserId = asyncHandler( async (req, res) => {
+  const userId = req.params.userId;
+  validateMongoDbId(userId);
         try {
-          const userId = req.params.userId;
           const cart = await Cart.findOne({ user: userId });
           if (!cart) {
             return res.status(404).json({ error: 'Cart not found' });
@@ -19,9 +20,11 @@ const getCartByUserId = asyncHandler(
 );
 
 // Add item to cart
-const addToCart = async (req, res) => {
+const addToCart = asyncHandler (async (req, res) => {
+  const { user, product, quantity } = req.body;
+  // validateMongoDbId(user);
+  // validateMongoDbId(product);
   try {
-    const { user, product, quantity } = req.body;
     let cart = await Cart.findOne({ user });
     if (!cart) {
       // Create new cart if it doesn't exist
@@ -42,12 +45,12 @@ const addToCart = async (req, res) => {
     console.error(error);
     res.status(500).json({ error: 'Server error' });
   }
-};
+});
 
 // Update item quantity in cart
-const updateCartItemQuantity = async (req, res) => {
+const updateCartItemQuantity = asyncHandler (async (req, res) => {
+  const { user, product, quantity } = req.body;
   try {
-    const { user, product, quantity } = req.body;
     const cart = await Cart.findOne({ user });
     if (!cart) {
       return res.status(404).json({ error: 'Cart not found' });
@@ -64,12 +67,12 @@ const updateCartItemQuantity = async (req, res) => {
     console.error(error);
     res.status(500).json({ error: 'Server error' });
   }
-};
+});
 
 // Remove item from cart
-const removeCartItem = async (req, res) => {
+const removeCartItem = asyncHandler (async (req, res) => {
+  const { user, product } = req.body;
   try {
-    const { user, product } = req.body;
     const cart = await Cart.findOne({ user });
     if (!cart) {
       return res.status(404).json({ error: 'Cart not found' });
@@ -86,7 +89,7 @@ const removeCartItem = async (req, res) => {
     console.error(error);
     res.status(500).json({ error: 'Server error' });
   }
-};
+});
 
 module.exports = {
   getCartByUserId,

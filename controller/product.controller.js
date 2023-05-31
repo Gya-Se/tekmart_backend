@@ -1,9 +1,12 @@
-const Product = require('../models/Product');
+const Product = require('../models/product.model');
+const asyncHandler = require("express-async-handler");
+const validateMongoDbId = require("../utils/validateMongoDbId");
 
 // Get product by ID
-const getProductById = async (req, res) => {
+const getProductById = asyncHandler (async (req, res) => {
+  const productId = req.params.id;
+  validateMongoDbId(productId);
   try {
-    const productId = req.params.id;
     const product = await Product.findById(productId);
     if (!product) {
       return res.status(404).json({ error: 'Product not found' });
@@ -13,10 +16,10 @@ const getProductById = async (req, res) => {
     console.error(error);
     res.status(500).json({ error: 'Server error' });
   }
-};
+});
 
 // Create a new product
-const createProduct = async (req, res) => {
+const createProduct = asyncHandler (async (req, res) => {
   try {
     const { name, description, price, vendor } = req.body;
     // Create new product
@@ -27,12 +30,13 @@ const createProduct = async (req, res) => {
     console.error(error);
     res.status(500).json({ error: 'Server error' });
   }
-};
+});
 
 // Update product by ID
-const updateProductById = async (req, res) => {
+const updateProductById = asyncHandler (async (req, res) => {
+  const productId = req.params.id;
+  validateMongoDbId(productId);
   try {
-    const productId = req.params.id;
     const updates = req.body;
     const updatedProduct = await Product.findByIdAndUpdate(productId, updates, { new: true });
     if (!updatedProduct) {
@@ -43,12 +47,13 @@ const updateProductById = async (req, res) => {
     console.error(error);
     res.status(500).json({ error: 'Server error' });
   }
-};
+});
 
 // Delete product by ID
-const deleteProductById = async (req, res) => {
+const deleteProductById = asyncHandler (async (req, res) => {
+  const productId = req.params.id;
+  validateMongoDbId(productId);
   try {
-    const productId = req.params.id;
     const deletedProduct = await Product.findByIdAndDelete(productId);
     if (!deletedProduct) {
       return res.status(404).json({ error: 'Product not found' });
@@ -58,7 +63,7 @@ const deleteProductById = async (req, res) => {
     console.error(error);
     res.status(500).json({ error: 'Server error' });
   }
-};
+});
 
 module.exports = {
   getProductById,

@@ -1,7 +1,9 @@
-const Order = require('../models/Order');
+const Order = require('../models/order.model');
+const asyncHandler = require("express-async-handler");
+const validateMongoDbId = require("../utils/validateMongoDbId");
 
 // Get all orders
-const getAllOrders = async (req, res) => {
+const getAllOrders = asyncHandler (async (req, res) => {
   try {
     const orders = await Order.find();
     res.json(orders);
@@ -9,12 +11,13 @@ const getAllOrders = async (req, res) => {
     console.error(error);
     res.status(500).json({ error: 'Server error' });
   }
-};
+});
 
 // Get order by ID
-const getOrderById = async (req, res) => {
+const getOrderById = asyncHandler (async (req, res) => {
+  const orderId = req.params.id;
+  validateMongoDbId(orderId);
   try {
-    const orderId = req.params.id;
     const order = await Order.findById(orderId);
     if (!order) {
       return res.status(404).json({ error: 'Order not found' });
@@ -24,10 +27,10 @@ const getOrderById = async (req, res) => {
     console.error(error);
     res.status(500).json({ error: 'Server error' });
   }
-};
+});
 
 // Create a new order
-const createOrder = async (req, res) => {
+const createOrder = asyncHandler (async (req, res) => {
   try {
     const { products, total, user } = req.body;
     // Create new order
@@ -38,12 +41,13 @@ const createOrder = async (req, res) => {
     console.error(error);
     res.status(500).json({ error: 'Server error' });
   }
-};
+});
 
 // Update order by ID
-const updateOrderById = async (req, res) => {
+const updateOrderById = asyncHandler (async (req, res) => {
+  const orderId = req.params.id;
+  validateMongoDbId(orderId);
   try {
-    const orderId = req.params.id;
     const updates = req.body;
     const updatedOrder = await Order.findByIdAndUpdate(orderId, updates, { new: true });
     if (!updatedOrder) {
@@ -54,12 +58,13 @@ const updateOrderById = async (req, res) => {
     console.error(error);
     res.status(500).json({ error: 'Server error' });
   }
-};
+});
 
 // Delete order by ID
-const deleteOrderById = async (req, res) => {
+const deleteOrderById = asyncHandler (async (req, res) => {
+  const orderId = req.params.id;
+  validateMongoDbId(orderId);
   try {
-    const orderId = req.params.id;
     const deletedOrder = await Order.findByIdAndDelete(orderId);
     if (!deletedOrder) {
       return res.status(404).json({ error: 'Order not found' });
@@ -69,7 +74,7 @@ const deleteOrderById = async (req, res) => {
     console.error(error);
     res.status(500).json({ error: 'Server error' });
   }
-};
+});
 
 module.exports = {
   getAllOrders,

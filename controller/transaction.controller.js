@@ -1,19 +1,22 @@
-const Transaction = require('../models/Transaction');
+const Transaction = require('../models/transaction.model');
+const asyncHandler = require("express-async-handler");
+const validateMongoDbId = require("../utils/validateMongoDbId");
 
 // Get all transactions for a user
-const getUserTransactions = async (req, res) => {
+const getUserTransactions = asyncHandler (async (req, res) => {
+  const userId = req.params.userId;
+  validateMongoDbId(userId);
   try {
-    const userId = req.params.userId;
     const transactions = await Transaction.find({ user: userId });
     res.json(transactions);
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Server error' });
   }
-};
+});
 
 // Create a new transaction
-const createTransaction = async (req, res) => {
+const createTransaction = asyncHandler (async (req, res) => {
   try {
     const { user, items, total } = req.body;
     // Create new transaction
@@ -24,7 +27,7 @@ const createTransaction = async (req, res) => {
     console.error(error);
     res.status(500).json({ error: 'Server error' });
   }
-};
+});
 
 module.exports = {
   getUserTransactions,
