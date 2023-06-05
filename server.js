@@ -1,5 +1,7 @@
 const { notFound, errorHandler } = require("./middlewares/customErrorHandler");
 const dbConnect = require("./config/dbConnection");
+const dotenv = require("dotenv");
+dotenv.config();
 
 //EXPORTING ROUTES
 const vendorRouter = require("./route/vendor.routes");
@@ -7,12 +9,9 @@ const userRouter = require("./route/user.routes");
 const adminRouter = require("./route/admin.routes")
 const cookieParser = require("cookie-parser");
 const bodyParser = require("body-parser");
-const dotenv = require("dotenv");
-const PORT = process.env.PORT || 3001;
+const PORT = process.env.PORT || 3000;
 const express = require("express");
 const morgan = require("morgan");
-
-dotenv.config();
 const app = express();
 dbConnect();
 
@@ -24,8 +23,8 @@ app.use(cookieParser());
 
 //API CONNECTIONS
 app.use("/v1/api/user", userRouter);
-// app.use("/v1/api/vendor", vendorRouter);
-// app.use("/v1/api/admin", adminRouter);
+app.use("/v1/api/vendor", vendorRouter);
+app.use("/v1/api/admin", adminRouter);
 
 //ERROR HANDLERS
 app.use(notFound);

@@ -39,11 +39,10 @@ var VendorSchema = new mongoose.Schema({
   ],
   role: {
     type: String,
-    default: "seller",
+    default: "vendor",
   },
   avatar: {
     type: String,
-    required: true,
   },
   withdrawMethod: {
     type: Object,

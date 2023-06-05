@@ -1,26 +1,31 @@
-// //IMPORTING METHODS FROM DIRECTORIES TO ROUTE
-// const express = require("express");
-// const { isSeller } = require("../middlewares/authMiddleware");
-// const {
-//     createCoupon,
-//     getaCoupon,
-//     updateCoupon,
-//     deleteCoupon,
-//     getAllCoupons } = require("../controller/coupon.controller");
-// const router = express.Router();
+//IMPORTING METHODS FROM DIRECTORIES TO ROUTE
+const express = require("express");
+const {
+    deleteVendorById,
+    deleteUserById,
+    getAllUsers,
+    getAllVendors,
+    getUserById,
+    getVendorById, } = require("../controller/admin.controller");
+const { authenticateAdmin } = require("../middlewares/authMiddleware");
+const router = express.Router();
 
-// //POST ROUTE
-// router.post("/create-coupon",  isSeller, createCoupon);
+//POST ROUTE
 
-// //GET ROUTE
-// router.get("/get-all-coupons", isSeller, getAllCoupons);
-// router.get("/get-coupon/:id",  isSeller, getaCoupon);
+//GET ROUTE
+router.get("/get-user/:id", authenticateAdmin, getUserById); 
+router.get("/get-all-users", authenticateAdmin, getAllUsers); 
 
-// //PUT ROUTE
-// router.put("/update-coupon/:id",  isSeller, updateCoupon);
+router.get("/get-vendor/:id", authenticateAdmin, getVendorById); 
+router.get("/get-all-vendors",authenticateAdmin, getAllVendors); 
 
-// //DELETE ROUTE
-// router.delete("/delete-coupon/:id", isSeller, deleteCoupon);
+//PUT ROUTE
+// router.post("/block-user",  authenticateAdmin, blockUser);
 
-// //EXPORT ROUTE
-// module.exports = router;
+//DELETE ROUTE
+router.delete("/delete-user/:id", authenticateAdmin, deleteUserById);
+
+router.delete("/delete-vendor/:id", authenticateAdmin, deleteVendorById);
+
+//EXPORT ROUTE
+module.exports = router;

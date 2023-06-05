@@ -1,9 +1,10 @@
 const mongoose = require("mongoose");
 
 const withdrawSchema = new mongoose.Schema({
-  seller: {
-    type: Object,
-    required: true,
+vendor: {
+  type: mongoose.Schema.Types.ObjectId,
+  ref: 'Vendor',
+  required: true
   },
   amount: {
     type: Number,

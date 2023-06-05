@@ -11,7 +11,7 @@ if(req?.headers?.authorization.startsWith("Bearer")){
         if (token) {
             const decoded = jwt.verify(token, process.env.JWT_SECRET);
             const user = await User.findById(decoded?.id);
-            req.user = user;
+            req.user= user;
             next();
         }}
      catch (error) {
@@ -29,8 +29,8 @@ const authenticateVendor = asyncHandler (async (req, res, next) => {
         try {
             if (token) {
                 const decoded = jwt.verify(token, process.env.JWT_SECRET);
-                const user = await Vendor.findById(decoded?.id);
-                req.user = user;
+                const vendor = await Vendor.findById(decoded?.id);
+                req.user = vendor;
                 next();
             }}
          catch (error) {

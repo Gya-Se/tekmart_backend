@@ -2,6 +2,9 @@ const Product = require('../models/product.model');
 const asyncHandler = require("express-async-handler");
 const validateMongoDbId = require("../utils/validateMongoDbId");
 
+
+//****************  PRODUCT ********************************/
+
 // Get product by ID
 const getProductById = asyncHandler (async (req, res) => {
   const productId = req.params.id;
@@ -20,10 +23,12 @@ const getProductById = asyncHandler (async (req, res) => {
 
 // Create a new product
 const createProduct = asyncHandler (async (req, res) => {
+  const vendor = req.user.id;
+  const { name, description, price, quantity} = req.body;
+  validateMongoDbId(vendor);
   try {
-    const { name, description, price, vendor } = req.body;
     // Create new product
-    const newProduct = new Product({ name, description, price, vendor });
+    const newProduct = new Product({ vendor, name, description, price, quantity});
     await newProduct.save();
     res.json(newProduct);
   } catch (error) {
@@ -51,25 +56,154 @@ const updateProductById = asyncHandler (async (req, res) => {
 
 // Delete product by ID
 const deleteProductById = asyncHandler (async (req, res) => {
-  const productId = req.params.id;
+  const vendorId = req.user;
+  const productId = req.body.id;
+  validateMongoDbId(vendorId);
   validateMongoDbId(productId);
   try {
-    const deletedProduct = await Product.findByIdAndDelete(productId);
-    if (!deletedProduct) {
-      return res.status(404).json({ error: 'Product not found' });
-    }
-    res.json({ message: 'Product deleted successfully' });
+    const vendor = await Product.findById(productId);
+
+    console.log(vendorId);
+    console.log(vendor);
+    // if (vendor == vendorId) {
+    //   const deletedProduct = await Product.findByIdAndDelete(productId);
+    //   if (!deletedProduct) {
+    //     return res.status(404).json({ error: 'Product not found' });
+    //   }
+    //   res.json({ message: 'Product deleted successfully' });
+    // } else {
+    //   throw new Error("You are not authorised");
+    // }
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Server error' });
   }
 });
 
+
+
+//****************  REVIEWS ********************************/
+
+// Get all reviews for a product
+// const getProductReviews = asyncHandler (async (req, res) => {
+//   const productId = req.params.productId;
+//   validateMongoDbId(productId);
+//   try {
+//     const reviews = await Review.find({ product: productId });
+//     res.json(reviews);
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({ error: 'Server error' });
+//   }
+// });
+
+// // Create a new review for a product
+// const createProductReview = asyncHandler (async (req, res) => {
+//   try {
+//     const { product, user, rating, comment } = req.body;
+//     // Create new review
+//     const newReview = new Review({ product, user, rating, comment });
+//     await newReview.save();
+//     res.status(201).json(newReview);
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({ error: 'Server error' });
+//   }
+// });
+
+// // Update review by ID
+// const updateReviewById = asyncHandler (async (req, res) => {
+//   const reviewId = req.params.id;
+//   validateMongoDbId(reviewId);
+//   try {
+//     const updates = req.body;
+//     const updatedReview = await Review.findByIdAndUpdate(reviewId, updates, { new: true });
+//     if (!updatedReview) {
+//       return res.status(404).json({ error: 'Review not found' });
+//     }
+//     res.json(updatedReview);
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({ error: 'Server error' });
+//   }
+// });
+
+// // Delete review by ID
+// const deleteReviewById = asyncHandler (async (req, res) => {
+//   const reviewId = req.params.id;
+//   validateMongoDbId(reviewId);
+//   try {
+//     const deletedReview = await Review.findByIdAndDelete(reviewId);
+//     if (!deletedReview) {
+//       return res.status(404).json({ error: 'Review not found' });
+//     }
+//     res.json({ message: 'Review deleted successfully' });
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({ error: 'Server error' });
+//   }
+// });
+
+
+
+//****************  IMAGES ********************************/
+
+// Upload an image
+// const uploadImage = asyncHandler (async (req, res) => {
+//   const { productId, imageUrl } = req.body;
+//   validateMongoDbId(productId);
+//   try {
+//     // Create new image
+//     const newImage = new Image({ productId, imageUrl });
+//     await newImage.save();
+//     res.status(201).json(newImage);
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({ error: 'Server error' });
+//   }
+// });
+
+// // Get all images for a product
+// const getProductImages = asyncHandler ( async (req, res) => {
+//   const productId = req.params.productId;
+//   validateMongoDbId(productId);
+//   try {
+//     const images = await Image.find({ productId });
+//     res.json(images);
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({ error: 'Server error' });
+//   }
+// });
+
+// // Delete an image
+// const deleteImage = asyncHandler (async  (req, res) => {
+//   const imageId = req.params.id;
+//   validateMongoDbId(productId);
+//   try {
+//     const deletedImage = await Image.findByIdAndDelete(imageId);
+//     if (!deletedImage) {
+//       return res.status(404).json({ error: 'Image not found' });
+//     }
+//     res.json({ message: 'Image deleted successfully' });
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({ error: 'Server error' });
+//   }
+// });
+
+
 module.exports = {
   getProductById,
   createProduct,
   updateProductById,
-  deleteProductById
+  deleteProductById,
+
+  // getProductReviews,
+  // createProductReview,
+  // updateReviewById,
+  // deleteReviewById,
+
 };
 
 //GET ALL PRODUCT
@@ -121,36 +255,7 @@ module.exports = {
 //     }
 // });
 
-// //ADD TO WISHLIST
-// const addToWishlist = asyncHandler( async(req, res) => {
-//     const {id} = req.user;
-//     const { prodId } = req.body;
-//     validateMongoDbId(id);
-//     try {
-//         const user = await User.findById(id);
-//         const alreadyAdded = user.wishlist.find((id) => id.toString() === prodId);
-//         if(alreadyAdded){
-//             let user = await User.findByIdAndUpdate(id, {
-//                 $pull: {wishlist: prodId},
-//             },
-//             {
-//                 new: true,
-//             });
-//             res.json(user);
-//         }
-//         else {
-//             let user = await User.findByIdAndUpdate(id, {
-//                 $push: {wishlist: prodId},
-//             },
-//             {
-//                 new: true,
-//             });
-//             res.json(user);
-//         }
-//     } catch (error) {
-//         throw new Error(error);
-//     }
-// });
+
 
 // //RATING
 // const rating = asyncHandler (async (req, res) => {

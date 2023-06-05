@@ -1,31 +1,36 @@
 const mongoose = require('mongoose');
+const bcrypt = require('bcrypt');
 
 const UserSchema = new mongoose.Schema({
   firstname: {
       type: String,
-      required: [true, "Enter your first name!"]
+    required: [true, "Enter your first name!"],
+      trim: true
   },
   lastname: {
       type: String,
       required:  [true, "Enter your last name!"]
+ ,     trim:true
   },
   email: {
     type: String,
     required: [true, "Enter your email!"],
-    unique: true
+    unique: true,
+    trim:true
   },
   password: {
     type: String,
     required: true,
     minLength: [8, "Password should not be less than eight characters!"]
   },
-  phone: {
-    type: String,
-    required: true
-  },
   avatar: {
     type: String,
     required: true
+  },
+  phone: {
+    type: String,
+    minLength: [10, "Phone number should not be less than ten!"],
+    maxLength: [10, "Phone number should not be more than ten!"]
   },
   address: {
     name:{
@@ -43,22 +48,36 @@ const UserSchema = new mongoose.Schema({
       maxLength: [10, "Phone number should not be more than ten!"]
     },
     addressType:{
-        type: String,
+      type: String,
     },
   },
-
+  isBlocked: {
+    type: Boolean,
+},
   role: {
     type: String,
     enum: ['customer', 'admin'],
     default: 'customer'
   },
+  products: [{
+    product: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Product',
+      required: true
+    },
+    quantity: {
+      type: Number,
+      required: true,
+      default: 1
+    }
+  }],
     refreshToken: {
-        type: String,
+     type: String,
     },
     passwordChangedAt: Date,
     passwordResetToken: String,
     passwordResetExpires: Date,
-  });
+  }, {timestamps: true});
 
   //ENCRYPTING PASSWORD
 UserSchema.pre("save", async function (next) {
