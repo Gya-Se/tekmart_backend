@@ -8,50 +8,51 @@ const ProductSchema = new mongoose.Schema({
     },
     name: {
       type: String,
-      required: true
+  },
+  slug: {
+    type: String,
+    lowercase: true,
+    unique: true
     },
     description: {
       type: String,
-      required: true
     },
     price: {
       type: Number,
-      required: true
     },
     quantity: {
       type: Number,
-      required: true,
       default: 0
     },
     images: [{
       type: String,
       default: ""
-    }],
+  }],
+  sold: {
+    type: Number,
+    default: 0
+    },
     category: {
         type: String,
-        required: true
     },
     color: {
       type: String,
-      required: true
     },
     brand: {
       type: String,
-      required: true
   },
-  ratings: {
-    user: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'User',
-      required: true
+  ratings: [{
+    star: Number,
+    comment: String,
+    postedby: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User"
     },
-    rating: {
-      type: Number
-    },
-    comment: {
-      type: String
-    },
-    }
+},],
+totalrating: {
+    type: String,
+    default: 0,
+}
   },{timestamps: true});
   
 module.exports = mongoose.model('Product', ProductSchema);

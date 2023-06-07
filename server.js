@@ -13,7 +13,6 @@ const PORT = process.env.PORT || 3000;
 const express = require("express");
 const morgan = require("morgan");
 const app = express();
-dbConnect();
 
 //PARSERs
 app.use(morgan("dev"));
@@ -31,7 +30,9 @@ app.use(notFound);
 app.use(errorHandler);
 
 //CREATING A PORTAL TO LISTEN FROM
-app.listen(PORT, () => {
-  console.log(`App started on port ${PORT}`);
-});
 
+dbConnect(
+  app.listen(PORT, () => {
+  console.log(`App started on port ${PORT}`);
+  })
+);

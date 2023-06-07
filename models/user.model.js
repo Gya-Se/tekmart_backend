@@ -4,73 +4,41 @@ const bcrypt = require('bcrypt');
 const UserSchema = new mongoose.Schema({
   firstname: {
       type: String,
-    required: [true, "Enter your first name!"],
       trim: true
   },
   lastname: {
       type: String,
-      required:  [true, "Enter your last name!"]
- ,     trim:true
+     trim:true
   },
   email: {
     type: String,
-    required: [true, "Enter your email!"],
-    unique: true,
-    trim:true
+    trim: true
   },
   password: {
     type: String,
-    required: true,
-    minLength: [8, "Password should not be less than eight characters!"]
   },
   avatar: {
     type: String,
-    required: true
   },
   phone: {
     type: String,
-    minLength: [10, "Phone number should not be less than ten!"],
-    maxLength: [10, "Phone number should not be more than ten!"]
   },
-  address: {
-    name:{
+  address: [{
+    streetAddress: {
       type: String,
     },
-    address:{
-        type: String,
-    },
-    town:{
-        type: String,
-    },
-    phoneNumber:{
-      type: String,
-      minLength: [10, "Phone number should not be less than ten!"],
-      maxLength: [10, "Phone number should not be more than ten!"]
-    },
-    addressType:{
+    town: {
       type: String,
     },
-  },
-  isBlocked: {
-    type: Boolean,
-},
+    addressType: {
+      type: String,
+    },
+  }],
   role: {
     type: String,
-    enum: ['customer', 'admin'],
     default: 'customer'
   },
-  products: [{
-    product: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'Product',
-      required: true
-    },
-    quantity: {
-      type: Number,
-      required: true,
-      default: 1
-    }
-  }],
+  cart: [],
     refreshToken: {
      type: String,
     },

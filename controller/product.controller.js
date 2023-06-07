@@ -6,7 +6,7 @@ const validateMongoDbId = require("../utils/validateMongoDbId");
 //****************  PRODUCT ********************************/
 
 // Get product by ID
-const getProductById = asyncHandler (async (req, res) => {
+const getProductById = asyncHandler(async (req, res) => {
   const productId = req.params.id;
   validateMongoDbId(productId);
   try {
@@ -22,13 +22,13 @@ const getProductById = asyncHandler (async (req, res) => {
 });
 
 // Create a new product
-const createProduct = asyncHandler (async (req, res) => {
+const createProduct = asyncHandler(async (req, res) => {
   const vendor = req.user.id;
-  const { name, description, price, quantity} = req.body;
+  const { name, description, price, quantity } = req.body;
   validateMongoDbId(vendor);
   try {
     // Create new product
-    const newProduct = new Product({ vendor, name, description, price, quantity});
+    const newProduct = new Product({ vendor, name, description, price, quantity });
     await newProduct.save();
     res.json(newProduct);
   } catch (error) {
@@ -38,7 +38,7 @@ const createProduct = asyncHandler (async (req, res) => {
 });
 
 // Update product by ID
-const updateProductById = asyncHandler (async (req, res) => {
+const updateProductById = asyncHandler(async (req, res) => {
   const productId = req.params.id;
   validateMongoDbId(productId);
   try {
@@ -55,28 +55,30 @@ const updateProductById = asyncHandler (async (req, res) => {
 });
 
 // Delete product by ID
-const deleteProductById = asyncHandler (async (req, res) => {
-  const vendorId = req.user;
-  const productId = req.body.id;
+const deleteProductById = asyncHandler(async (req, res) => {
+  const vendorId = req.user.id;
+  const { productId } = req.body;
   validateMongoDbId(vendorId);
   validateMongoDbId(productId);
   try {
-    const vendor = await Product.findById(productId);
+    const product = await Product.findOne({ vendor: vendorId });
 
-    console.log(vendorId);
-    console.log(vendor);
-    // if (vendor == vendorId) {
-    //   const deletedProduct = await Product.findByIdAndDelete(productId);
-    //   if (!deletedProduct) {
-    //     return res.status(404).json({ error: 'Product not found' });
-    //   }
-    //   res.json({ message: 'Product deleted successfully' });
-    // } else {
-    //   throw new Error("You are not authorised");
+    // if (!product) {
+    //   console.log("Error")
     // }
+    const checkVendor = product.vendor.toString();
+    if (checkVendor === vendorId) {
+      const deletedProduct = await Product.findByIdAndDelete(productId);
+      if (!deletedProduct) {
+        return res.status(404).json({ error: 'Product not found' });
+      }
+      res.json({ message: 'Product deleted successfully' });
+    }
+
+
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Server error' });
+    res.status(500).json({ error: 'You are not authorised' });
   }
 });
 
@@ -341,10 +343,10 @@ module.exports = {
 // });
 
 // module.exports = {
-//     createProduct, 
-//     getaProduct, 
-//     getallProduct, 
-//     updateProduct, 
+//     createProduct,
+//     getaProduct,
+//     getallProduct,
+//     updateProduct,
 //     deleteProduct,
 //     addToWishlist,
 //     rating,

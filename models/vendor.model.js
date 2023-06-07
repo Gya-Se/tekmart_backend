@@ -7,29 +7,23 @@ const crypto = require("crypto");
 var VendorSchema = new mongoose.Schema({
   shopName: {
     type: String,
-    required: [true, "Enter your shop name!"],
     unique: true,
   },
   email: {
     type: String,
-    required: [true, "Enter your shop email address"],
   },
   password: {
     type: String,
-    required: [true, "Enter your password"],
-    minLength: [8, "Password should be more than seven (7) characters"],
   },
-  phoneNumber: {
+  phone: {
     type: String,
-    required: [true, "Enter your Number"],
-    minLength: [10, "Number should be more than nine (9) characters"],
   },
   description: {
     type: String,
   },
   address: [
   {
-  address:{
+  streetAddress:{
     type: String,
   },
   town:{
@@ -51,18 +45,15 @@ var VendorSchema = new mongoose.Schema({
     type: Number,
     default: 0,
   },
-  transactions: [
-  {
+  transactions: [{
   amount: {
     type: Number,
-    required: true,
   },
     status: {
     type: String,
     default: "Processing",
-      },
     },
-  ],
+  }],
   refreshToken: {
     type: String,
 },
