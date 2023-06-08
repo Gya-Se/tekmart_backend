@@ -78,84 +78,84 @@ const deleteOrderById = asyncHandler (async (req, res) => {
 });
 
 //UPDATE ORDER STATUS
-// const updateOrderStatus = asyncHandler(async (req, res) => {
-//   const { status} = req.body;
-//   const { id } = req.user;
-//   validateMongoDbId(id);
-//   try {
-//       const updateOrdStatus = await Order.findByIdAndUpdate(
-//           id,
-//           {
-//               orderStatus: status,
-//               paymentIntent: {
-//                   status: status,
-//               },
-//           }, {
-//               new: true,
-//           },
-//      )
-//       res.json(updateOrdStatus);
-//   } catch (error) {
-//       throw new Error(error);
-//   }
-// });
+const updateOrderStatus = asyncHandler(async (req, res) => {
+  const { status} = req.body;
+  const { id } = req.user;
+  validateMongoDbId(id);
+  try {
+      const updateOrdStatus = await Order.findByIdAndUpdate(
+          id,
+          {
+              orderStatus: status,
+              paymentIntent: {
+                  status: status,
+              },
+          }, {
+              new: true,
+          },
+     )
+      res.json(updateOrdStatus);
+  } catch (error) {
+      throw new Error(error);
+  }
+});
 
 
-// //CREATE ORDER
-// const createOrder = asyncHandler(async (req, res) => {
-//     const { cashOnDel, couponApplied } = req.body;
-//     const { id } = req.user;
-//     validateMongoDbId(id);
-//     try {
-//         if (!cashOnDel) throw new Error("Creating Cash on Delivery Failed");
-//         const user = await User.findById(id);
-//         const userCart = await Cart.findOne({ orderby: user.id });
-//         let finalAmount = 0;
-//         if (couponApplied && userCart.totalAfterDiscount) {
-//             finalAmount = userCart.totalAfterDiscount;
-//         }
-//         else {
-//             finalAmount = userCart.cartTotal;
-//         }
-//         let newOrder = await new Order({
-//             products: userCart.products,
-//             paymentIntent: {
-//                 id: uniqid(),
-//                 method: "cashOnDel",
-//                 amount: finalAmount,
-//                 status: "Cash On Delivery",
-//                 created: Date.now(),
-//                 currency: "GHC",
-//             },
-//             orderby: user.id,
-//             orderStatus: "Processing",
-//         }).save();
-//         let update = userCart.products.map((item) => {
-//             return {
-//                 updateOne: {
-//                     filter: { id: item.product.id },
-//                     update: { $inc: { quantity: -item.count, sold: + item.count } },
-//                 },
-//             };
-//         });
-//         const updated = Product.bulkWrite(update, {});
-//         res.json({ message: "success" });
-//     } catch (error) {
-//         throw new Error(error);
-//     }
-// });
+//CREATE ORDER
+const createAnOrder = asyncHandler(async (req, res) => {
+    const { cashOnDel, couponApplied } = req.body;
+    const { id } = req.user;
+    validateMongoDbId(id);
+    try {
+        if (!cashOnDel) throw new Error("Creating Cash on Delivery Failed");
+        const user = await User.findById(id);
+        const userCart = await Cart.findOne({ orderby: user.id });
+        let finalAmount = 0;
+        if (couponApplied && userCart.totalAfterDiscount) {
+            finalAmount = userCart.totalAfterDiscount;
+        }
+        else {
+            finalAmount = userCart.cartTotal;
+        }
+        let newOrder = await new Order({
+            products: userCart.products,
+            paymentIntent: {
+                id: uniqid(),
+                method: "cashOnDel",
+                amount: finalAmount,
+                status: "Cash On Delivery",
+                created: Date.now(),
+                currency: "GHC",
+            },
+            orderby: user.id,
+            orderStatus: "Processing",
+        }).save();
+        let update = userCart.products.map((item) => {
+            return {
+                updateOne: {
+                    filter: { id: item.product.id },
+                    update: { $inc: { quantity: -item.count, sold: + item.count } },
+                },
+            };
+        });
+        const updated = Product.bulkWrite(update, {});
+        res.json({ message: "success" });
+    } catch (error) {
+        throw new Error(error);
+    }
+});
 
 // //USER GET ORDERS
-// const getOrders = asyncHandler(async (req, res) => {
-//     const { id } = req.user;
-//     validateMongoDbId(id);
-//     try {
-//         const userOrders = await Order.findOne({ orderby: id }).populate("products.product").exec();
-//         res.json(userOrders);
-//     } catch (error) {
-//         throw new Error(error);
-//     }
-// });
+const getOrders = asyncHandler(async (req, res) => {
+    const { id } = req.user;
+    validateMongoDbId(id);
+    try {
+        const userOrders = await Order.findOne({ orderby: id }).populate("products.product").exec();
+        res.json(userOrders);
+    } catch (error) {
+        throw new Error(error);
+    }
+});
 
 
 module.exports = {

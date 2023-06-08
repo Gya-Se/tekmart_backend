@@ -2,18 +2,18 @@ const mongoose = require('mongoose');
 
 const ProductSchema = new mongoose.Schema({
     vendor: {
-      type: mongoose.Schema.Types.ObjectId,
+      type: String,
       ref: 'Vendor',
       required: true
     },
     name: {
       type: String,
   },
-  slug: {
-    type: String,
-    lowercase: true,
-    unique: true
-    },
+  // slug: {
+  //   type: String,
+  //   lowercase: true,
+  //   unique: true
+  //   },
     description: {
       type: String,
     },
