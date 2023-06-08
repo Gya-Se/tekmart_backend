@@ -1,10 +1,10 @@
 const mongoose = require("mongoose");
 
 const withdrawSchema = new mongoose.Schema({
-vendor: {
-  type: mongoose.Schema.Types.ObjectId,
-  ref: 'Vendor',
-  required: true
+  vendor: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Vendor',
+    required: true
   },
   amount: {
     type: Number,
@@ -14,6 +14,6 @@ vendor: {
     type: String,
     default: "Processing",
   },
-},{timestamps: true});
+}, { timestamps: true });
 
 module.exports = mongoose.model("Withdraw", withdrawSchema);

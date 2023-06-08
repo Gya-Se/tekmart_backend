@@ -78,9 +78,7 @@ const userLogin = asyncHandler(async (req, res) => {
     const refreshToken = generateRefreshToken(findUser?._id);
     const updateuser = await User.findByIdAndUpdate(
       findUser?._id,
-      {
-        refreshToken: refreshToken,
-      },
+      { refreshToken: refreshToken, },
       { new: true }
     );
     res.cookie("refreshToken", refreshToken, {

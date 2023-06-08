@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 
 const ProductSchema = new mongoose.Schema({
     vendor: {
-      type: String,
+      type: mongoose.Schema.Types.ObjectId,
       ref: 'Vendor',
       required: true
     },

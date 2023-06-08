@@ -12,13 +12,15 @@ const bodyParser = require("body-parser");
 const PORT = process.env.PORT || 3000;
 const express = require("express");
 const morgan = require("morgan");
+const cors = require("cors");
 const app = express();
 
 //PARSERs
 app.use(morgan("dev"));
 app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({extend: false}));
+app.use(bodyParser.urlencoded({ extend: true }));
 app.use(cookieParser());
+app.use(cors());
 
 //API CONNECTIONS
 app.use("/v1/api/user", userRouter);

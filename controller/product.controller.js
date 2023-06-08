@@ -5,7 +5,7 @@ const validateMongoDbId = require("../utils/validateMongoDbId");
 
 //****************  PRODUCT ********************************/
 
-// Get product by ID
+// User, vendor and admin get product by ID
 const getProductById = asyncHandler(async (req, res) => {
   const productId = req.params.id;
   validateMongoDbId(productId);
@@ -21,7 +21,7 @@ const getProductById = asyncHandler(async (req, res) => {
   }
 });
 
-// Create a new product
+// Vendor create a new product
 const createProduct = asyncHandler(async (req, res) => {
   const vendor = req.user.id;
   const { name, description, price, quantity } = req.body;
@@ -37,7 +37,7 @@ const createProduct = asyncHandler(async (req, res) => {
   }
 });
 
-// Update product by ID
+// Vendor update product by ID
 const updateProductById = asyncHandler(async (req, res) => {
   const vendorId = req.user.id;
   const { productId } = req.body;
@@ -61,7 +61,7 @@ const updateProductById = asyncHandler(async (req, res) => {
   }
 });
 
-// Delete product by ID
+// Vendor delete product by ID
 const deleteProductById = asyncHandler(async (req, res) => {
   const vendorId = req.user.id;
   const { productId } = req.body;
@@ -70,9 +70,9 @@ const deleteProductById = asyncHandler(async (req, res) => {
 
   try {
     const product = await Product.findOne({ vendor: vendorId });
-    const checkVendor = product.vendor.toString();
+    const getVendor = product.vendor.toString();
 
-    if (checkVendor === vendorId) {
+    if (getVendor === vendorId) {
       const deletedProduct = await Product.findByIdAndDelete(productId);
       if (!deletedProduct) {
         return res.status(404).json({ error: 'Product not found' });
@@ -86,7 +86,7 @@ const deleteProductById = asyncHandler(async (req, res) => {
   }
 });
 
-//Get All Product User
+//User get all product to filter, sort and paginate
 const getAllProductUser = asyncHandler( async(req, res) => {
     try {
         //FILTERING
@@ -140,16 +140,11 @@ const getVendorProducts = asyncHandler(async (req, res) => {
   const vendorId = req.user.id;
   validateMongoDbId(vendorId);
   try {
-    const product = await Product.find({ vendor: vendorId });
-    const checkVendor = product.vendor.toString();
-
-    if (checkVendor === vendorId) {
-      const allProducts = await Product.find();
+    const allProducts = await Product.find({ vendor: vendorId });
       if (!allProducts) {
-        return res.status(404).json({ error: 'Products not found' });
+        return res.status(404).json({ error: "You don't have any products yet" });
       }
       res.json(allProducts);
-    }
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Server error' });
@@ -157,203 +152,16 @@ const getVendorProducts = asyncHandler(async (req, res) => {
 });
 
 
-
-//****************  REVIEWS ********************************/
-
- //RATING
- const rating = asyncHandler (async (req, res) => {
-  const { id } = req.user;
-  validateMongoDbId(id);
-  const {star, prodId, comment} = req.body;
+//User get all products of a vendor's store
+const userGetVendorProducts = asyncHandler(async (req, res) => {
+  const vendorId = req.body.id;
+  validateMongoDbId(vendorId);
   try {
-      const product = await Product.findById(prodId);
-      let alreadyRated = product.review.find(
-          (userId) =>  userId.postedby.toString() === id.toString()
-      );
-      if(alreadyRated){
-          const updateRating = await Product.updateOne(
-              {
-                  ratings: {$elemMatch: alreadyRated},
-              },
-              {
-                  $set: {"ratings.$.star": star, "ratings.$.comment": comment}
-              },
-              {
-                  new: true,
-              }
-              );
-              res.json(updateRating);
-      } else {
-          const rateProduct = await Product.findByIdAndUpdate(
-              prodId, {
-                  $push: {
-                      ratings: {
-                          star: star,
-                          comment: comment,
-                          postedby: id,
-                      },
-                  },
-              },
-              {new: true},
-          );
-          res.json(rateProduct);
-      };
-
-      const getallRatings = await Product.findById(prodId);
-      let totalRating = getallRatings.ratings.length;
-      let ratingSum = getallRatings.ratings.map((item )=> item.star).reduce((prev, curr) => prev + curr, 0);
-      let actualRating = Math.round(ratingSum / totalRating);
-      let finalProduct = await Product.findByIdAndUpdate(
-          prodId,
-          {
-              totalRating: actualRating,
-          },
-          {
-              new: true,
-          }
-      );
-      res.json(finalProduct);
-  } catch (error) {
-      throw new Error(error);
-  }
-});
-
-//Get all reviews for a product
-const getProductReviews = asyncHandler (async (req, res) => {
-  const productId = req.params.productId;
-  validateMongoDbId(productId);
-  try {
-    const reviews = await Review.find({ product: productId });
-    res.json(reviews);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Server error' });
-  }
-});
-
-// Create a new review for a product
-const createProductReview = asyncHandler (async (req, res) => {
-  try {
-    const { product, user, rating, comment } = req.body;
-    // Create new review
-    const newReview = new Review({ product, user, rating, comment });
-    await newReview.save();
-    res.status(201).json(newReview);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Server error' });
-  }
-});
-
-// Update review by ID
-const updateReviewById = asyncHandler (async (req, res) => {
-  const reviewId = req.params.id;
-  validateMongoDbId(reviewId);
-  try {
-    const updates = req.body;
-    const updatedReview = await Review.findByIdAndUpdate(reviewId, updates, { new: true });
-    if (!updatedReview) {
-      return res.status(404).json({ error: 'Review not found' });
-    }
-    res.json(updatedReview);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Server error' });
-  }
-});
-
-// Delete review by ID
-const deleteReviewById = asyncHandler (async (req, res) => {
-  const reviewId = req.params.id;
-  validateMongoDbId(reviewId);
-  try {
-    const deletedReview = await Review.findByIdAndDelete(reviewId);
-    if (!deletedReview) {
-      return res.status(404).json({ error: 'Review not found' });
-    }
-    res.json({ message: 'Review deleted successfully' });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Server error' });
-  }
-});
-
-
-
-
-
-//****************  IMAGES ********************************/
-
- //UPLOAD IMAGES
-const uploadImages = asyncHandler(async (req, res) => {
-    const { id } = req.params;
-    validateMongoDbId(id);
-    try {
-        const uploader = (path) => cloudinaryUploadImg(path, "images");
-        const urls = [];
-        const files = req.files;
-        for (const file of files) {
-            const { path } = file;
-            const newpath = await uploader(path);
-            urls.push(newpath);
-            fs.unlinkSync(path);
-        }
-        const findProduct = await Product.findByIdAndUpdate(id, {
-            images: urls.map((file) => {
-                return file;
-            }),
-        }, { new: true });
-        res.json(findProduct);
-    } catch (error) {
-        throw new Error(error);
-    }
-});
-
-
-
-
-
-
-//****************  IMAGES ********************************/
-
-// Upload an image
-const uploadImage = asyncHandler (async (req, res) => {
-  const { productId, imageUrl } = req.body;
-  validateMongoDbId(productId);
-  try {
-    // Create new image
-    const newImage = new Image({ productId, imageUrl });
-    await newImage.save();
-    res.status(201).json(newImage);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Server error' });
-  }
-});
-
-// Get all images for a product
-const getProductImages = asyncHandler ( async (req, res) => {
-  const productId = req.params.productId;
-  validateMongoDbId(productId);
-  try {
-    const images = await Image.find({ productId });
-    res.json(images);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Server error' });
-  }
-});
-
-// Delete an image
-const deleteImage = asyncHandler (async  (req, res) => {
-  const imageId = req.params.id;
-  validateMongoDbId(productId);
-  try {
-    const deletedImage = await Image.findByIdAndDelete(imageId);
-    if (!deletedImage) {
-      return res.status(404).json({ error: 'Image not found' });
-    }
-    res.json({ message: 'Image deleted successfully' });
+    const allProducts = await Product.find({ vendor: vendorId });
+      if (!allProducts) {
+        return res.status(404).json({ error: "Vendor don't have any products yet" });
+      }
+      res.json(allProducts);
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Server error' });
@@ -368,15 +176,5 @@ module.exports = {
   deleteProductById,
   getAllProductUser,
   getVendorProducts,
-
-  rating,
-  getProductReviews,
-  createProductReview,
-  updateReviewById,
-  deleteReviewById,
-
-  uploadImages,
-  uploadImage,
-  getProductImages,
-  deleteImage,
+  userGetVendorProducts,
 };
