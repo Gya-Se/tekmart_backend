@@ -3,8 +3,6 @@ const asyncHandler = require("express-async-handler");
 const validateMongoDbId = require("../utils/validateMongoDbId");
 
 
-//****************  PRODUCT ********************************/
-
 // User, vendor and admin get product by ID
 const getProductById = asyncHandler(async (req, res) => {
   const productId = req.params.id;
@@ -17,7 +15,7 @@ const getProductById = asyncHandler(async (req, res) => {
     res.json(product);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Server error' });
+    throw new Error(error);
   }
 });
 
@@ -39,13 +37,15 @@ const createProduct = asyncHandler(async (req, res) => {
 
 // Vendor update product by ID
 const updateProductById = asyncHandler(async (req, res) => {
-  const vendorId = req.user.id;
+  const vendorId = req.user.userId;
   const { productId } = req.body;
   validateMongoDbId(vendorId);
   validateMongoDbId(productId);
   try {
     const product = await Product.findOne({ vendor: vendorId });
     const checkVendor = product.vendor.toString();
+
+    if (checkVendor !== vendorId) throw new Error("Not Authorised");
 
     if (checkVendor === vendorId) {
       const updates = req.body;
@@ -57,32 +57,33 @@ const updateProductById = asyncHandler(async (req, res) => {
     }
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Server error' });
+    throw new Error(error);
   }
 });
 
 // Vendor delete product by ID
 const deleteProductById = asyncHandler(async (req, res) => {
   const vendorId = req.user.id;
-  const { productId } = req.body;
+  const productId = req.params.id;
   validateMongoDbId(vendorId);
   validateMongoDbId(productId);
 
   try {
-    const product = await Product.findOne({ vendor: vendorId });
+    const product = await Product.findOne({ productId });
     const getVendor = product.vendor.toString();
+
+    if (checkVendor !== vendorId) throw new Error("Not Authorised");
 
     if (getVendor === vendorId) {
       const deletedProduct = await Product.findByIdAndDelete(productId);
       if (!deletedProduct) {
         return res.status(404).json({ error: 'Product not found' });
       }
-      res.json({ message: 'Product deleted successfully' });
+      res.status(200).json("Product deleted successfully");
     }
 
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'You are not authorised' });
+    throw new Error(error);
   }
 });
 
