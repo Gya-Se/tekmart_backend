@@ -18,7 +18,7 @@ const app = express();
 //PARSERs
 app.use(morgan("dev"));
 app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extend: true }));
+app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(cors());
 
@@ -32,9 +32,7 @@ app.use(notFound);
 app.use(errorHandler);
 
 //CREATING A PORTAL TO LISTEN FROM
-
-dbConnect(
+dbConnect();
   app.listen(PORT, () => {
-  console.log(`App started on port ${PORT}`);
+  console.log(`Server started on port http://localhost: ${PORT}`);
   })
-);

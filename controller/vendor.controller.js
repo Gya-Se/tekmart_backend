@@ -1,49 +1,108 @@
-// IMPORTING LIBRABRIES AND METHODS FROM DIRECTORIES
+const User = require("../models/user.model");
 const Vendor = require("../models/vendor.model");
-const Order = require("../models/order.model");
+const sendEmail = require("./email.controller");
 const asyncHandler = require("express-async-handler");
 const validateMongoDbId = require("../utils/validateMongoDbId");
 const { generateToken } = require("../config/jwtToken");
 const { generateRefreshToken } = require("../config/refreshToken");
+const { createVendorSchema } = require("../helpers/validation.schema");
 const jwt = require("jsonwebtoken");
-const sendEmail = require("./email.controller");
 const crypto = require("crypto");
 
-//CREATING A VENDOR ACCOUNT
-const createVendor = asyncHandler(async (req, res) => {
-    const email = req.body.email;
-    const findVendor = await Vendor.findOne({ email });
-    if (!findVendor) {
-        const newVendor = await Vendor.create(req.body);
-        res.json({ newVendor });
-    }
-    else {
-        throw new Error("Vendor Already Exist");
-    }
-}
-);
 
-//VENDOR LOGIN AND PASSWORD AUTHENTICATION
+// Create a new vendor
+const createVendor = asyncHandler(async (req, res) => {
+    try {
+        //Get vendor details
+        const { shopName, email, password, phone } = req.body;
+
+        //Validate vendor details joi
+        const result = await createVendorSchema.validateAsync(req.body);
+
+        // Check if vendor with the same email already exists
+        const existingVendor = await Vendor.findOne({ email: result.email });
+        const existingUser = await User.findOne({ email: result.email });
+
+        if (existingVendor || existingUser) {
+            return res.status(400).json({ error: "An account with this email already exists" });
+        }
+
+        const newVendor = new Vendor(result);
+        await newVendor.save();
+
+        res.json(newVendor);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: "Server error" });
+    }
+});
+
+//vendor  update details
+const updateVendor = asyncHandler(async (req, res) => {
+    const userId = req.body.userId;
+    validateMongoDbId(userId);
+    try {
+        const updates = req.body;
+        const updatedVendor = await Vendor.findByIdAndUpdate(userId, updates, { new: true });
+        if (!updatedVendor) {
+            return res.status(404).json({ error: "Vendor not found" });
+        }
+        res.status(200).json(updatedVendor)
+    } catch (error) {
+        throw new Error(error);
+    }
+});
+
+//Update vendor address
+const saveAndUpdateAddress = asyncHandler(async (req, res) => {
+    const userId = req.body.userId;
+    validateMongoDbId(userId);
+    try {
+        const updateAddress = await Vendor.findByIdAndUpdate(userId,
+            { address: req.body.address }, { new: true });
+        res.status(200).json(updateAddress);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: "Server error" });
+    }
+});
+
+//vendor delete account
+const deleteVendor = asyncHandler(async (req, res) => {
+    const userId = req.body.userId;
+    validateMongoDbId(userId);
+    try {
+        const deletedVendor = await Vendor.findByIdAndDelete(userId);
+        if (!deletedVendor) {
+            return res.status(404).json({ error: "Vendor not found" });
+        }
+        res.status(200).json({ message: "Vendor deleted successfully" });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: "Server error" });
+    }
+});
+
+//Vendor login
 const vendorLogin = asyncHandler(async (req, res) => {
     const { email, password } = req.body;
     const vendor = await Vendor.findOne({ email });
     if (vendor.role !== "vendor") throw new Error("Not Authorised");
     if (vendor && (await vendor.isPasswordMatched(password))) {
-        const refreshToken = await generateRefreshToken(vendor?._id);
-        const updatevendor = await Vendor.findByIdAndUpdate(vendor?._id, {
+        const refreshToken = await generateRefreshToken(vendor.id);
+        const updatevendor = await Vendor.findByIdAndUpdate(vendor.id, {
             refreshToken: refreshToken,
-        },
-            { new: true });
+        }, { new: true });
         res.cookie("refreshToken", refreshToken, {
             httpOnly: true,
             maxAge: 72 * 60 * 60 * 1000,
             secure: false,
         });
-        res.json({
-            id: vendor?._id,
-            name: vendor?.name,
-            email: vendor?.email,
-            token: generateToken(vendor?._id)
+        res.status(200).json({
+            id: vendor.id,
+            name: vendor.name,
+            email: vendor.email,
+            token: generateToken(vendor.id)
         });
     }
     else {
@@ -51,7 +110,7 @@ const vendorLogin = asyncHandler(async (req, res) => {
     }
 });
 
-//HANDLE REFRESH TOKEN
+//Handle refresh token
 const handleRefreshToken = asyncHandler(async (req, res) => {
     const cookie = req.cookies;
     if (!cookie?.refreshToken) throw new Error("No refresh token in cookies");
@@ -67,7 +126,7 @@ const handleRefreshToken = asyncHandler(async (req, res) => {
     });
 });
 
-//HANDLE LOGOUT
+//Handle logout
 const logout = asyncHandler(async (req, res) => {
     const cookie = req.cookies;
     if (!cookie?.refreshToken) throw new Error("No Refresh Token in Cookies");
@@ -90,39 +149,9 @@ const logout = asyncHandler(async (req, res) => {
     res.sendStatus(204); //FORBIDDEN
 });
 
-//vendor  UPDATE DETAILS
-const updateVendor = asyncHandler(async (req, res) => {
-    const { id } = req.user;
-    validateMongoDbId(id);
-    try {
-        const updateVendor = await Vendor.findByIdAndUpdate(id,
-            {
-                name: req?.body?.name,
-                email: req?.body?.email,
-            }, {
-            new: true,
-        });
-        res.json({ updateVendor })
-    } catch (error) {
-        throw new Error(error);
-    }
-});
-
-//vendor DELETE ACCOUNT
-const deleteVendor = asyncHandler(async (req, res) => {
-    const { id } = req.user;
-    validateMongoDbId(id);
-    try {
-        const deleteVendor = await Vendor.findByIdAndDelete(id);
-        res.json({ deleteVendor })
-    } catch (error) {
-        throw new Error(error);
-    }
-});
-
-//UPDATE PASSWORD
+//Update password
 const updatePassword = asyncHandler(async (req, res) => {
-    const { _id } = req.user;
+    const { _id } = req.body.userId;
     const { password } = req.body;
     validateMongoDbId(_id);
     const vendor = await Vendor.findById(_id);
@@ -135,7 +164,7 @@ const updatePassword = asyncHandler(async (req, res) => {
     }
 });
 
-//FORGOT PASSWORD TOKEN
+//Forgot password token
 const forgotPasswordToken = asyncHandler(async (req, res) => {
     const { email } = req.body;
     const vendor = await Vendor.findOne({ email });
@@ -157,7 +186,7 @@ const forgotPasswordToken = asyncHandler(async (req, res) => {
     }
 });
 
-//RESET PASSWORD
+//Reset password
 const resetPassword = asyncHandler(async (req, res) => {
     const { password } = req.body;
     const { token } = req.params;
@@ -177,24 +206,6 @@ const resetPassword = asyncHandler(async (req, res) => {
     res.json(vendor);
 });
 
-//UPDATE vendorS ADDRESS
-const saveAndUpdateAddress = asyncHandler(async (req, res) => {
-    const { id } = req.user;
-    validateMongoDbId(id);
-    try {
-        const updateAddress = await Vendor.findByIdAndUpdate(id,
-            {
-                address: req?.body?.address
-            }, {
-            new: true,
-        });
-        res.json({ updateAddress })
-    } catch (error) {
-        throw new Error(error);
-    }
-});
-
-//EXPORT MODULES
 module.exports = {
     updateVendor,
     createVendor,

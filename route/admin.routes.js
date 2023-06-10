@@ -7,25 +7,25 @@ const {
     getAllVendors,
     getUserById,
     getVendorById, } = require("../controller/admin.controller");
-const { authenticateAdmin } = require("../middlewares/authMiddleware");
+const { isAdmin, authenticateUser } = require("../middlewares/authMiddleware");
 const router = express.Router();
 
 //POST ROUTE
 
 //GET ROUTE
-router.get("/get-user/:id", authenticateAdmin, getUserById); 
-router.get("/get-all-users", authenticateAdmin, getAllUsers); 
+router.get("/get-user/:id", authenticateUser, isAdmin, getUserById);
+router.get("/get-all-users", authenticateUser, isAdmin, getAllUsers);
 
-router.get("/get-vendor/:id", authenticateAdmin, getVendorById); 
-router.get("/get-all-vendors",authenticateAdmin, getAllVendors); 
+router.get("/get-vendor/:id", authenticateUser, isAdmin, getVendorById);
+router.get("/get-all-vendors", authenticateUser, isAdmin, getAllVendors);
 
 //PUT ROUTE
-// router.post("/block-user",  authenticateAdmin, blockUser);
+// router.post("/block-user",  authenticateUser, isAdmin, blockUser);
 
 //DELETE ROUTE
-router.delete("/delete-user/:id", authenticateAdmin, deleteUserById);
+router.delete("/delete-user/:id", authenticateUser, isAdmin, deleteUserById);
 
-router.delete("/delete-vendor/:id", authenticateAdmin, deleteVendorById);
+router.delete("/delete-vendor/:id", authenticateUser, isAdmin, deleteVendorById);
 
 //EXPORT ROUTE
 module.exports = router;

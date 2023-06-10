@@ -11,7 +11,7 @@ if(req?.headers?.authorization.startsWith("Bearer")){
         if (token) {
             const decoded = jwt.verify(token, process.env.JWT_SECRET);
             const user = await User.findById(decoded?.id);
-            req.user= user;
+            req.body.userId = user;
             next();
         }}
      catch (error) {
@@ -29,8 +29,8 @@ const authenticateVendor = asyncHandler (async (req, res, next) => {
         try {
             if (token) {
                 const decoded = jwt.verify(token, process.env.JWT_SECRET);
-                const vendor = await Vendor.findById(decoded?.id);
-                req.user = vendor;
+                const user = await Vendor.findById(decoded?.id);
+                req.body.userId = user;
                 next();
             }}
          catch (error) {
@@ -42,7 +42,10 @@ const authenticateVendor = asyncHandler (async (req, res, next) => {
 });
     
 
-const authenticateAdmin = asyncHandler(async (req, res, next) =>{
-    
+const isAdmin = asyncHandler(async (req, res, next) => {
+    const { userId } = req.body;
+    if (userId.role === "admin") {
+        next();
+    };
 })
-module.exports = {authenticateUser, authenticateVendor, authenticateAdmin};
+module.exports = {authenticateUser, authenticateVendor, isAdmin};
