@@ -5,39 +5,37 @@ const asyncHandler = require("express-async-handler");
 const validateMongoDbId = require("../utils/validateMongoDbId");
 const { generateToken } = require("../config/jwtToken");
 const { generateRefreshToken } = require("../config/refreshToken");
-const { createUserSchema } = require("../helpers/validation.schema");
 const jwt = require("jsonwebtoken");
 const crypto = require("crypto");
 
 
 // Create a new user
+//POST request
 const createUser = asyncHandler(async (req, res) => {
   try {
     //Get user details
     const { firstname, lastname, email, password } = req.body;
 
-    //Validate user details joi
-    const result = await createUserSchema.validateAsync(req.body);
-
     // Check if an account  with the same email already exists
-      const existingVendor = await Vendor.findOne({ email: result.email });
-      const existingUser = await User.findOne({ email: result.email });
+      const existingVendor = await Vendor.findOne({ email: email });
+      const existingUser = await User.findOne({ email: email });
 
       if (existingVendor || existingUser) {
         return res.status(400).json({ error: "An account with this email already exists" });
       }
     
-    const newUser = new User(result);
+    const newUser = new User(firstname, lastname, email, password);
     await newUser.save();
-    //Send back user details
+
     res.status(200).json(newUser);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: "Server error" });
+    throw new Error(error);
   }
 });
 
-// Update user
+// Update user details
+//PUT request
 const updateUser = asyncHandler(async (req, res) => {
   const userId = req.body.userId;
   validateMongoDbId(userId);
@@ -50,11 +48,12 @@ const updateUser = asyncHandler(async (req, res) => {
     res.status(200).json(updatedUser);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: "Server error" });
+    throw new Error(error);
   }
 });
 
 //Update Address
+//PUT request
 const saveAndUpdateAddress = asyncHandler(async (req, res) => {
   const userId = req.body.userId;
   validateMongoDbId(userId);
@@ -65,12 +64,13 @@ const saveAndUpdateAddress = asyncHandler(async (req, res) => {
     res.status(200).json(updateAddress);
   } catch (error) {
       console.error(error);
-      res.status(500).json({ error: "Server error" });
+      throw new Error(error);
   }
 });
 
 
 // User delete account
+//DELETE request
 const deleteUser = asyncHandler(async (req, res) => {
   const userId = req.body.userId;
   validateMongoDbId(userId);
@@ -82,11 +82,12 @@ const deleteUser = asyncHandler(async (req, res) => {
     res.status(200).json({ message: "User deleted successfully" });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: "Server error" });
+    throw new Error(error);
   }
 });
 
 //User login
+//POST request
 const userLogin = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
   const user = await User.findOne({ email });
@@ -115,6 +116,7 @@ const userLogin = asyncHandler(async (req, res) => {
 });
 
 //Handle refresh token
+//GET request
 const handleRefreshToken = asyncHandler(async (req, res) => {
   const cookie = req.cookies;
   if (!cookie.refreshToken) throw new Error("No Refresh Token in Cookies");
@@ -131,9 +133,10 @@ const handleRefreshToken = asyncHandler(async (req, res) => {
 });
 
 //Handle logout
+//GET request
 const logout = asyncHandler(async (req, res) => {
   const cookie = req.cookies;
-  if (!cookie?.refreshToken) throw new Error("No Refresh Token in Cookies");
+  if (!cookie.refreshToken) throw new Error("No Refresh Token in Cookies");
   const refreshToken = cookie.refreshToken;
   const user = await User.findOne({ refreshToken });
   if (!user) {
@@ -154,6 +157,7 @@ const logout = asyncHandler(async (req, res) => {
 });
 
 //Update password
+//PUT request
 const updatePassword = asyncHandler(async (req, res) => {
   const userId = req.body.userId;
   const { password } = req.body;
@@ -173,28 +177,31 @@ const updatePassword = asyncHandler(async (req, res) => {
 });
 
 //Forgot password token
+//POST request
 const forgotPasswordToken = asyncHandler(async (req, res) => {
   const { email } = req.body;
-  const user = await User.findOne({ email });
-  if (!user) throw new Error("User not found with this email address");
   try {
+    const user = await User.findOne({ email });
+    if (!user) throw new Error("User not found with this email address");
     const token = await user.createPasswordResetToken();
     await user.save();
-    const resetURL = `Hi, Please follow this link to reset your password. This link is valid for 10 minutes from now. <a href= http://localhost:5000/api/user/reset-password/${token}> Reset Password </a>`;
+    const userName = user.firstname;
+    const resetURL = `Please follow this link to reset your password. This link is valid for 10 minutes from now. <a href= http://localhost:5000/api/user/reset-password/${token}> Reset Password </a>`;
     const data = {
       to: email,
-      text: "Hey User",
-      subject: "Forgot Password Link",
+      text: `Hi ${userName}`,
+      subject: "Reset Forgotten Password",
       htm: resetURL,
     };
     sendEmail(data);
-    res.json(token);
+    res.status(200).json(token);
   } catch (error) {
     throw new Error(error);
   }
 });
 
 //Reset password
+//PUT request
 const resetPassword = asyncHandler(async (req, res) => {
   const { password } = req.body;
   const { token } = req.params;

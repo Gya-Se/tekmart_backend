@@ -11,6 +11,7 @@ var VendorSchema = new mongoose.Schema({
   },
   email: {
     type: String,
+    unique: true
   },
   password: {
     type: String,
@@ -21,16 +22,14 @@ var VendorSchema = new mongoose.Schema({
   description: {
     type: String,
   },
-  address: [
-  {
+  address: {
   streetAddress:{
     type: String,
   },
   town:{
     type: String,
   },
-  }
-  ],
+  },
   role: {
     type: String,
     default: "vendor",
@@ -45,15 +44,6 @@ var VendorSchema = new mongoose.Schema({
     type: Number,
     default: 0,
   },
-  transactions: [{
-  amount: {
-    type: Number,
-  },
-    status: {
-    type: String,
-    default: "Processing",
-    },
-  }],
   refreshToken: {
     type: String,
 },

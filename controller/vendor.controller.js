@@ -5,39 +5,37 @@ const asyncHandler = require("express-async-handler");
 const validateMongoDbId = require("../utils/validateMongoDbId");
 const { generateToken } = require("../config/jwtToken");
 const { generateRefreshToken } = require("../config/refreshToken");
-const { createVendorSchema } = require("../helpers/validation.schema");
 const jwt = require("jsonwebtoken");
 const crypto = require("crypto");
 
 
 // Create a new vendor
+//POST request
 const createVendor = asyncHandler(async (req, res) => {
     try {
         //Get vendor details
         const { shopName, email, password, phone } = req.body;
 
-        //Validate vendor details joi
-        const result = await createVendorSchema.validateAsync(req.body);
-
         // Check if vendor with the same email already exists
-        const existingVendor = await Vendor.findOne({ email: result.email });
-        const existingUser = await User.findOne({ email: result.email });
+        const existingVendor = await Vendor.findOne({ email: email });
+        const existingUser = await User.findOne({ email: email });
 
         if (existingVendor || existingUser) {
             return res.status(400).json({ error: "An account with this email already exists" });
         }
 
-        const newVendor = new Vendor(result);
+        const newVendor = new Vendor(shopName, password, phone);
         await newVendor.save();
 
-        res.json(newVendor);
+        res.status(200).json(newVendor);
     } catch (error) {
         console.error(error);
-        res.status(500).json({ error: "Server error" });
+        throw new Error(error);
     }
 });
 
 //vendor  update details
+//PUT request
 const updateVendor = asyncHandler(async (req, res) => {
     const userId = req.body.userId;
     validateMongoDbId(userId);
@@ -54,6 +52,7 @@ const updateVendor = asyncHandler(async (req, res) => {
 });
 
 //Update vendor address
+//PUT request
 const saveAndUpdateAddress = asyncHandler(async (req, res) => {
     const userId = req.body.userId;
     validateMongoDbId(userId);
@@ -63,11 +62,12 @@ const saveAndUpdateAddress = asyncHandler(async (req, res) => {
         res.status(200).json(updateAddress);
     } catch (error) {
         console.error(error);
-        res.status(500).json({ error: "Server error" });
+        throw new Error(error);
     }
 });
 
 //vendor delete account
+//DELETE request
 const deleteVendor = asyncHandler(async (req, res) => {
     const userId = req.body.userId;
     validateMongoDbId(userId);
@@ -79,11 +79,12 @@ const deleteVendor = asyncHandler(async (req, res) => {
         res.status(200).json({ message: "Vendor deleted successfully" });
     } catch (error) {
         console.error(error);
-        res.status(500).json({ error: "Server error" });
+        throw new Error(error);
     }
 });
 
 //Vendor login
+//POST request
 const vendorLogin = asyncHandler(async (req, res) => {
     const { email, password } = req.body;
     const vendor = await Vendor.findOne({ email });
@@ -111,6 +112,7 @@ const vendorLogin = asyncHandler(async (req, res) => {
 });
 
 //Handle refresh token
+//GET request
 const handleRefreshToken = asyncHandler(async (req, res) => {
     const cookie = req.cookies;
     if (!cookie?.refreshToken) throw new Error("No refresh token in cookies");
@@ -127,9 +129,10 @@ const handleRefreshToken = asyncHandler(async (req, res) => {
 });
 
 //Handle logout
+//GET request
 const logout = asyncHandler(async (req, res) => {
     const cookie = req.cookies;
-    if (!cookie?.refreshToken) throw new Error("No Refresh Token in Cookies");
+    if (!cookie.refreshToken) throw new Error("No Refresh Token in Cookies");
     const refreshToken = cookie.refreshToken;
     const user = await Vendor.findOne({ refreshToken });
     if (!user) {
@@ -150,43 +153,51 @@ const logout = asyncHandler(async (req, res) => {
 });
 
 //Update password
+//PUT request
 const updatePassword = asyncHandler(async (req, res) => {
-    const { _id } = req.body.userId;
+    const userId = req.body.userId;
     const { password } = req.body;
-    validateMongoDbId(_id);
-    const vendor = await Vendor.findById(_id);
-    if (password) {
-        Vendor.password = password;
-        const updatedPassword = await user.save();
-        res.json(updatedPassword);
-    } else {
-        res.json(vendor);
+    validateMongoDbId(userId);
+    try {
+        const vendor = await Vendor.findById(userId);
+        if (password) {
+            vendor.password = password;
+            const updatedPassword = await vendor.save();
+            res.json(updatedPassword);
+        } else {
+            res.json(vendor);
+        }
+    } catch (error) {
+        throw new Error(error);
     }
 });
 
 //Forgot password token
+//POST request
 const forgotPasswordToken = asyncHandler(async (req, res) => {
     const { email } = req.body;
-    const vendor = await Vendor.findOne({ email });
-    if (!vendor) throw new Error("User not found with this email address");
     try {
+        const vendor = await Vendor.findOne({ email });
+        if (!vendor) throw new Error("Vendor not found with this email address");
         const token = await vendor.createPasswordResetToken();
         await vendor.save();
-        const resetURL = `Hi, Please follow this link to reset your password. This link is valid for 10 minutes from now. <a href= 'http://localhost:5000/api/user/reset-password/${token}> Reset Password </a>`;
+        const userName = vendor.shopName;
+        const resetURL = `Please follow this link to reset your password. This link is valid for 10 minutes from now. <a href= 'http://localhost:5000/v1/api/user/reset-password/${token}> Reset Password </a>`;
         const data = {
             to: email,
-            text: "Hey User",
-            subject: "Forgot Password Link",
+            text: `Hi ${userName}`,
+            subject: "Reset Forgotten Password",
             htm: resetURL,
         };
         sendEmail(data);
-        res.json(token);
+        res.status(200).json(token);
     } catch (error) {
         throw new Error(error);
     }
 });
 
 //Reset password
+//PUT request
 const resetPassword = asyncHandler(async (req, res) => {
     const { password } = req.body;
     const { token } = req.params;

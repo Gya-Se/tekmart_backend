@@ -16,8 +16,8 @@ const router = express.Router();
 
 //POST ROUTE
 router.post("/register", createUser);
-router.post("/forgot-password-token", forgotPasswordToken);
 router.post("/login", userLogin);
+router.post("/forgot-password-token", forgotPasswordToken);
 
 //GET ROUTE
 router.get("/refresh", handleRefreshToken); 
@@ -27,10 +27,10 @@ router.get("/logout", logout);
 router.delete("/delete-user", authenticateUser, deleteUser); 
 
 //PUT ROUTE
-router.put("/reset-password/:token", authenticateUser, resetPassword);
-router.put("/update-password", authenticateUser, updatePassword);
-router.put("/update-address", authenticateUser, saveAndUpdateAddress);
 router.put("/update-user", authenticateUser, updateUser); 
+router.put("/update-address", authenticateUser, saveAndUpdateAddress);
+router.put("/update-password", authenticateUser, updatePassword);
+router.put("/reset-password/:token", authenticateUser, resetPassword);
 
 //EXPORT ROUTE
 module.exports = router;
