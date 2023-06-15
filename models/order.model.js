@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 
 const OrderSchema = new mongoose.Schema({
-  orderby: {
+  user: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
     required: true
@@ -28,7 +28,7 @@ const OrderSchema = new mongoose.Schema({
     required: true
   },
   shippingAddress: {
-    type: String,
+    type: Array,
     required: true
   },
   status: {
@@ -36,6 +36,6 @@ const OrderSchema = new mongoose.Schema({
     enum: ['pending', 'confirmed', 'shipped', 'delivered'],
     default: 'pending'
   },
-},{timestamps: true});
+}, { timestamps: true });
 
 module.exports = mongoose.model('Order', OrderSchema);

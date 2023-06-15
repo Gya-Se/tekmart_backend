@@ -32,10 +32,9 @@ const getOrderById = asyncHandler (async (req, res) => {
 // Create a new order
 const createOrder = asyncHandler (async (req, res) => {
   try {
-    const { products, total} = req.body;
-    const { user} = req.user;
+    const {shippingAddress, paymentIntent, products, totalAmount, userId } = req.body;
     // Create new order
-    const newOrder = new Order({ products, total, user });
+    const newOrder = new Order({ shippingAddress, paymentIntent, products, totalAmount, user: userId });
     await newOrder.save();
     res.json(newOrder);
   } catch (error) {
@@ -47,6 +46,8 @@ const createOrder = asyncHandler (async (req, res) => {
 // Update order by ID
 const updateOrderById = asyncHandler (async (req, res) => {
   const orderId = req.params.id;
+  const userId = req.body.userId;
+  validateMongoDbId(userId);
   validateMongoDbId(orderId);
   try {
     const updates = req.body;
@@ -145,7 +146,7 @@ const createAnOrder = asyncHandler(async (req, res) => {
     }
 });
 
-// //USER GET ORDERS
+//User get orders
 const getOrders = asyncHandler(async (req, res) => {
     const { id } = req.user;
     validateMongoDbId(id);

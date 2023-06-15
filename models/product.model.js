@@ -1,58 +1,60 @@
 const mongoose = require('mongoose');
 
 const ProductSchema = new mongoose.Schema({
-    vendor: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'Vendor',
-      required: true
-    },
-    name: {
-      type: String,
+  vendor: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Vendor',
+    required: true
   },
-  // slug: {
-  //   type: String,
-  //   lowercase: true,
-  //   unique: true
-  //   },
-    description: {
-      type: String,
+  name: {
+    type: String,
+  },
+  slug: {
+    type: String,
+    lowercase: true,
     },
-    price: {
-      type: Number,
-    },
-    quantity: {
-      type: Number,
-      default: 0
-    },
-    images: [{
-      type: String,
-      default: ""
+  description: {
+    type: String,
+  },
+  price: {
+    type: Number,
+  },
+  quantity: {
+    type: Number,
+    default: 0
+  },
+  images: [{
+    type: String,
+    default: ""
   }],
   sold: {
     type: Number,
     default: 0
-    },
-    category: {
-        type: String,
-    },
-    color: {
-      type: String,
-    },
-    brand: {
-      type: String,
+  },
+  category: {
+    type: String,
+  },
+  color: {
+    type: String,
+  },
+  brand: {
+    type: String,
   },
   ratings: [{
     star: Number,
     comment: String,
     postedby: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "User"
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User"
     },
-},],
-totalrating: {
+  },],
+  images: [{
+    type: String,
+  }],
+  totalrating: {
     type: String,
     default: 0,
-}
-  },{timestamps: true});
-  
+  }
+}, { timestamps: true });
+
 module.exports = mongoose.model('Product', ProductSchema);

@@ -24,7 +24,7 @@ const createUser = asyncHandler(async (req, res) => {
         return res.status(400).json({ error: "An account with this email already exists" });
       }
     
-    const newUser = new User(firstname, lastname, email, password);
+    const newUser = new User({firstname, lastname, email, password});
     await newUser.save();
 
     res.status(200).json(newUser);
