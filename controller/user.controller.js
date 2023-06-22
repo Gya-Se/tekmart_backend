@@ -181,11 +181,28 @@ const deleteUser = asyncHandler(async (req, res) => {
   }
 });
 
+// Get user details
+const getUser = asyncHandler(async (req, res) => {
+  const userId = req.user._id;
+  validateMongoDbId(userId);
+  try {
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json("User not found");
+    }
+    res.status(200).json(user);
+  } catch (error) {
+    throw new Error(error);
+  }
+});
+
 //User login
 const userLogin = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
   const user = await User.findOne({ email });
-  if (user.role !== "customer" || user.role !== "admin") throw new Error("Not Authorised");
+
+  if (user.isBlocked === true ) throw new Error("Your account is blocked. Contact our customer service for support on how to recover your account");
+  
   if (user && (await user.isPasswordMatched(password))) {
     const refreshToken = generateRefreshToken(user._id);
     await User.findByIdAndUpdate(user._id, { refreshToken: refreshToken, },
@@ -328,4 +345,5 @@ module.exports = {
   updateAvatar,
   activateUser,
   deleteAddress,
+  getUser,
 };

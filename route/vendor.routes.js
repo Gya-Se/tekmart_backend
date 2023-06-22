@@ -11,7 +11,8 @@ const {
     logout,
     deleteVendor,
     updateAvatar,
-    activateVendor, } = require("../controller/vendor.controller");
+    activateVendor,
+    getVendor, } = require("../controller/vendor.controller");
 const { authenticateVendor } = require("../middlewares/authMiddleware");
 const { upload } = require("../middlewares/multer");
 const router = express.Router();
@@ -25,6 +26,7 @@ router.post("/login", vendorLogin);
 
 //GET ROUTE
 router.get("/refresh", handleRefreshToken); 
+router.get("/get-vendor", authenticateVendor, getVendor); 
 router.get("/logout", logout); 
 
 //DELETE ROUTE

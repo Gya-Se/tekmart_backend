@@ -41,6 +41,10 @@ const UserSchema = new mongoose.Schema({
     type: String,
     default: 'customer'
   },
+  isBlocked: {
+    type: Boolean,
+    default: false
+  },
   refreshToken: {
     type: String,
   },

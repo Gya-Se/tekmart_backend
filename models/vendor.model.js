@@ -29,6 +29,10 @@ var VendorSchema = new mongoose.Schema({
     type: String,
     default: "vendor",
   },
+  isBlocked: {
+    type: Boolean,
+    default: false
+  },
   avatar: {
     type: String,
     default: "",

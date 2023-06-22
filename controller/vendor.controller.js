@@ -69,7 +69,6 @@ const activateVendor = asyncHandler(async (req, res) => {
     }
 });
 
-
 // Update vendor avatar
 const updateAvatar = asyncHandler(async (req, res) => {
     const vendorId = req.vendor._id;
@@ -86,13 +85,11 @@ const updateAvatar = asyncHandler(async (req, res) => {
         }
         res.status(200).json(updatedVendor);
     } catch (error) {
-        console.error(error);
         throw new Error(error);
     }
 });
 
-
-//vendor  update details
+//Vendor  update details
 const updateVendor = asyncHandler(async (req, res) => {
     const vendorId = req.vendor._id;
     validateMongoDbId(vendorId);
@@ -108,8 +105,7 @@ const updateVendor = asyncHandler(async (req, res) => {
     }
 });
 
-
-//vendor delete account
+//Vendor delete account
 const deleteVendor = asyncHandler(async (req, res) => {
     const vendorId = req.vendor._id;
     validateMongoDbId(vendorId);
@@ -120,7 +116,21 @@ const deleteVendor = asyncHandler(async (req, res) => {
         }
         res.status(200).json("Vendor deleted successfully");
     } catch (error) {
-        console.error(error);
+        throw new Error(error);
+    }
+});
+
+//Get vendor details
+const getVendor = asyncHandler(async (req, res) => {
+    const vendorId = req.vendor._id;
+    validateMongoDbId(vendorId);
+    try {
+        const vendor = await Vendor.findById(vendorId);
+        if (!vendor) {
+            return res.status(404).json("Vendor not found");
+          }
+        res.status(200).json(vendor)
+    } catch (error) {
         throw new Error(error);
     }
 });
@@ -129,7 +139,11 @@ const deleteVendor = asyncHandler(async (req, res) => {
 const vendorLogin = asyncHandler(async (req, res) => {
     const { email, password } = req.body;
     const vendor = await Vendor.findOne({ email });
+
     if (vendor.role !== "vendor") throw new Error("Not Authorised");
+  
+    if (vendor.isBlocked === true ) throw new Error("Your account is blocked. Contact our customer service for support on how to recover your account");
+
     if (vendor && (await vendor.isPasswordMatched(password))) {
         const refreshToken = generateRefreshToken(vendor._id);
         await Vendor.findByIdAndUpdate(vendor._id, { refreshToken: refreshToken },
@@ -243,7 +257,7 @@ const forgotPasswordToken = asyncHandler(async (req, res) => {
 const resetPassword = asyncHandler(async (req, res) => {
     const { password } = req.body;
     const { token } = req.params;
-    
+
     const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
 
     const vendor = await Vendor.findOne({
@@ -259,15 +273,16 @@ const resetPassword = asyncHandler(async (req, res) => {
 });
 
 module.exports = {
-    updateVendor,
     createVendor,
-    handleRefreshToken,
-    logout,
-    updatePassword,
     forgotPasswordToken,
-    resetPassword,
-    vendorLogin,
     activateVendor,
+    vendorLogin,
+    handleRefreshToken,
+    getVendor,
+    logout,
     deleteVendor,
+    resetPassword,
+    updatePassword,
     updateAvatar,
+    updateVendor,
 };

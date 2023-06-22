@@ -9,12 +9,12 @@ const ProductSchema = new mongoose.Schema({
   name: {
     type: String,
   },
-  slug: {
-    type: String,
-    lowercase: true,
-    },
   description: {
     type: String,
+  },
+  isBlocked: {
+    type: Boolean,
+    default: false
   },
   price: {
     type: Number,
@@ -48,9 +48,6 @@ const ProductSchema = new mongoose.Schema({
       ref: "User"
     },
   },],
-  images: [{
-    type: String,
-  }],
   totalrating: {
     type: String,
     default: 0,
