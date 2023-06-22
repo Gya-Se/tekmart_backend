@@ -6,7 +6,7 @@ const validateMongoDbId = require("../utils/validateMongoDbId");
 // Create a new transaction
 const createTransaction = asyncHandler(async (req, res) => {
   try {
-    const user = req.body.userId;
+    const user = req.user;
     const { vendor, products, totalAmount, paymentMethod } = req.body;
 
     // Create new transaction
@@ -20,7 +20,7 @@ const createTransaction = asyncHandler(async (req, res) => {
 
 // Get all transactions for a user
 const getUserTransactions = asyncHandler(async (req, res) => {
-  const userId = req.body.userId;
+  const userId = req.user;
   validateMongoDbId(userId);
   try {
     const transactions = await Transaction.find({ user: userId });
@@ -32,7 +32,7 @@ const getUserTransactions = asyncHandler(async (req, res) => {
 
 // Get user transactions for a user
 const getUserTransactionById = asyncHandler(async (req, res) => {
-  const userId = req.body.userId;
+  const userId = req.user;
   const transactId = req.params.id;
   validateMongoDbId(userId);
   validateMongoDbId(transactId);
@@ -53,7 +53,7 @@ const getUserTransactionById = asyncHandler(async (req, res) => {
 
 // User cancel transaction request
 const cancelTransaction = asyncHandler(async (req, res) => {
-  const userId = req.body.userId;
+  const userId = req.user;
   const { cancel } = req.body;
   const transactId = req.params.id;
   validateMongoDbId(userId);
@@ -77,7 +77,7 @@ const cancelTransaction = asyncHandler(async (req, res) => {
 
 // User delete a transaction
 const deleteTransaction = asyncHandler(async (req, res) => {
-  const userId = req.body.userId;
+  const userId = req.user;
   const transactId = req.params.id;
   validateMongoDbId(userId);
   validateMongoDbId(transactId);

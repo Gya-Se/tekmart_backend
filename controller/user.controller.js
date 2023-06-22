@@ -37,7 +37,7 @@ const createUser = asyncHandler(async (req, res) => {
 // Update user details
 //PUT request
 const updateUser = asyncHandler(async (req, res) => {
-  const userId = req.body.userId;
+  const userId = req.user;
   validateMongoDbId(userId);
   try {
     const updates = req.body;
@@ -55,7 +55,7 @@ const updateUser = asyncHandler(async (req, res) => {
 //Update Address
 //PUT request
 const saveAndUpdateAddress = asyncHandler(async (req, res) => {
-  const userId = req.body.userId;
+  const userId = req.user;
   validateMongoDbId(userId);
   try {
     const updateAddress = await User.findByIdAndUpdate(
@@ -72,7 +72,7 @@ const saveAndUpdateAddress = asyncHandler(async (req, res) => {
 // User delete account
 //DELETE request
 const deleteUser = asyncHandler(async (req, res) => {
-  const userId = req.body.userId;
+  const userId = req.user;
   validateMongoDbId(userId);
   try {
     const deletedUser = await User.findByIdAndDelete(userId);
@@ -159,7 +159,7 @@ const logout = asyncHandler(async (req, res) => {
 //Update password
 //PUT request
 const updatePassword = asyncHandler(async (req, res) => {
-  const userId = req.body.userId;
+  const userId = req.user;
   const { password } = req.body;
   validateMongoDbId(userId);
   try {

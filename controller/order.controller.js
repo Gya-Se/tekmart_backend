@@ -46,7 +46,7 @@ const createOrder = asyncHandler (async (req, res) => {
 // Update order by ID
 const updateOrderById = asyncHandler (async (req, res) => {
   const orderId = req.params.id;
-  const userId = req.body.userId;
+  const userId = req.user;
   validateMongoDbId(userId);
   validateMongoDbId(orderId);
   try {

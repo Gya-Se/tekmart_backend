@@ -21,7 +21,7 @@ const getProductById = asyncHandler(async (req, res) => {
 
 // Vendor create a new product
 const createProduct = asyncHandler(async (req, res) => {
-  const vendor = req.user.id;
+  const vendor = req.user;
   const { name, description, price, quantity } = req.body;
   validateMongoDbId(vendor);
   try {
@@ -37,7 +37,7 @@ const createProduct = asyncHandler(async (req, res) => {
 
 // Vendor update product by ID
 const updateProductById = asyncHandler(async (req, res) => {
-  const vendorId = req.user.userId;
+  const vendorId = req.user;
   const { productId } = req.body;
   validateMongoDbId(vendorId);
   validateMongoDbId(productId);
@@ -63,7 +63,7 @@ const updateProductById = asyncHandler(async (req, res) => {
 
 // Vendor delete product by ID
 const deleteProductById = asyncHandler(async (req, res) => {
-  const vendorId = req.user.id;
+  const vendorId = req.user;
   const productId = req.params.id;
   validateMongoDbId(vendorId);
   validateMongoDbId(productId);
@@ -138,7 +138,7 @@ const getAllProductUser = asyncHandler(async (req, res) => {
 
 //Vendor get all products of store
 const getVendorProducts = asyncHandler(async (req, res) => {
-  const vendorId = req.user.id;
+  const vendorId = req.user;
   validateMongoDbId(vendorId);
   try {
     const allProducts = await Product.find({ vendor: vendorId });
@@ -155,7 +155,7 @@ const getVendorProducts = asyncHandler(async (req, res) => {
 
 //User get all products of a vendor's store
 const userGetVendorProducts = asyncHandler(async (req, res) => {
-  const vendorId = req.body.id;
+  const vendorId = req.params.id;
   validateMongoDbId(vendorId);
   try {
     const allProducts = await Product.find({ vendor: vendorId });
