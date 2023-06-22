@@ -29,36 +29,36 @@ const createVendor = asyncHandler(async (req, res) => {
             password,
             phone
         };
-        
+
         const activationToken = createActivationToken(vendor);
         const activationUrl = `http://localhost:5000/seller/activation/${activationToken}`;
         try {
-          await sendEmail({
-            email: vendor.email,
-            subject: "Activate your shop",
-            message: `Hello ${vendor.shopName}, please click on the link to activate your shop: ${activationUrl}`,
-          });
-          res.status(201).json(`Please check your email:- ${vendor.email} to activate your shop!`);
+            sendEmail({
+                email: vendor.email,
+                subject: "Activate your shop",
+                message: `Hello ${vendor.shopName}, please click on the link to activate your shop: ${activationUrl}`,
+            });
+            res.status(201).json(`Please check your email:- ${vendor.email} to activate your shop!`);
         } catch (error) {
-          throw new Error(error);
+            throw new Error(error);
         }
     } catch (error) {
         console.error(error);
         throw new Error(error);
     }
 });
-  
+
 //Activate vendor
 const activateVendor = asyncHandler(async (req, res) => {
     try {
         const { activation_token } = req.body;
         const newVendor = jwt.verify(activation_token, process.env.ACTIVATION_SECRET);
-  
+
         if (!newVendor) {
-          throw new Error ("Invalid token");
+            throw new Error("Invalid token");
         }
-        const { shopName, email, password, phone} =newVendor;
-  
+        const { shopName, email, password, phone } = newVendor;
+
         const newVendorDetails = new Vendor(shopName, email, password, phone);
         await newVendorDetails.save();
         res.status(200).json(newVendorDetails)
@@ -72,8 +72,8 @@ const updateVendor = asyncHandler(async (req, res) => {
     const userId = req.user._id;
     validateMongoDbId(userId);
     try {
-        const {shopName, description, address, phone} = req.body;
-        const updatedVendor = await Vendor.findByIdAndUpdate(userId, {shopName, description, address, phone}, { new: true });
+        const { shopName, description, address, phone } = req.body;
+        const updatedVendor = await Vendor.findByIdAndUpdate(userId, { shopName, description, address, phone }, { new: true });
         if (!updatedVendor) {
             return res.status(404).json({ error: "Vendor not found" });
         }
@@ -92,17 +92,17 @@ const updateAvatar = asyncHandler(async (req, res) => {
         const existAvatarPath = `uploads/${vendor.avatar}`;
         fs.unlinkSync(existAvatarPath);
 
-      const fileUrl = path.join(req.file.filename);
-      const updatedVendor = await Vendor.findByIdAndUpdate(vendorId, {avatar: fileUrl}, { new: true });
-      if (!updatedVendor) {
-        return res.status(404).json({ error: "Vendor not found" });
-      }
-      res.status(200).json(updatedVendor);
+        const fileUrl = path.join(req.file.filename);
+        const updatedVendor = await Vendor.findByIdAndUpdate(vendorId, { avatar: fileUrl }, { new: true });
+        if (!updatedVendor) {
+            return res.status(404).json({ error: "Vendor not found" });
+        }
+        res.status(200).json(updatedVendor);
     } catch (error) {
-      console.error(error);
-      throw new Error(error);
+        console.error(error);
+        throw new Error(error);
     }
-  });
+});
 
 //vendor delete account
 const deleteVendor = asyncHandler(async (req, res) => {
@@ -127,7 +127,7 @@ const vendorLogin = asyncHandler(async (req, res) => {
     if (vendor.role !== "vendor") throw new Error("Not Authorised");
     if (vendor && (await vendor.isPasswordMatched(password))) {
         const refreshToken = await generateRefreshToken(vendor.id);
-        await Vendor.findByIdAndUpdate(vendor.id, {refreshToken: refreshToken}, { new: true });
+        await Vendor.findByIdAndUpdate(vendor.id, { refreshToken: refreshToken }, { new: true });
         res.cookie("refreshToken", refreshToken, {
             httpOnly: true,
             maxAge: 72 * 60 * 60 * 1000,

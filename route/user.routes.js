@@ -13,7 +13,7 @@ const {
     saveAndUpdateAddress,
     updateAvatar,} = require("../controller/user.controller");
 const { authenticateUser } = require("../middlewares/authMiddleware");
-const { upload } = require("../multer");
+const { upload } = require("../middlewares/multer");
 const router = express.Router();
 
 //POST ROUTE

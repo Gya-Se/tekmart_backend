@@ -9,7 +9,7 @@ const {
     updateProductById,
     getProductById, } = require("../controller/product.controller");
 const {authenticateVendor, authenticateUser} = require("../middlewares/authMiddleware");
-const { upload } = require("../multer");
+const { upload } = require("../middlewares/multer");
 const router = express.Router();
 
 //POST ROUTE

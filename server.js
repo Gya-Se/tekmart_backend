@@ -8,6 +8,10 @@ const vendorRouter = require("./route/vendor.routes");
 const userRouter = require("./route/user.routes");
 const adminRouter = require("./route/admin.routes")
 const productRouter = require("./route/product.routes");
+const cartRouter = require("./route/cart.routes");
+const transactionRouter = require("./route/transaction.routes");
+const withdrawRouter = require("./route/withdraw.routes");
+const orderRouter = require("./route/order.routes");
 
 const cookieParser = require("cookie-parser");
 const bodyParser = require("body-parser");
@@ -29,6 +33,10 @@ app.use("/v1/api/user", userRouter);
 app.use("/v1/api/vendor", vendorRouter);
 app.use("/v1/api/admin", adminRouter);
 app.use("/v1/api/product", productRouter);
+app.use("/v1/api/transaction", transactionRouter);
+app.use("/v1/api/withdraw", withdrawRouter);
+app.use("/v1/api/order", orderRouter);
+app.use("/v1/api/cart", cartRouter);
 
 //Error handlers
 app.use(notFound);

@@ -17,14 +17,14 @@ const createUser = asyncHandler(async (req, res) => {
     const { firstname, lastname, email, password } = req.body;
 
     // Check if an account  with the same email already exists
-      const existingVendor = await Vendor.findOne({ email: email });
-      const existingUser = await User.findOne({ email: email });
+    const existingVendor = await Vendor.findOne({ email: email });
+    const existingUser = await User.findOne({ email: email });
 
-      if (existingVendor || existingUser) {
-        return res.status(400).json({ error: "An account with this email already exists" });
-      }
-    
-    const newUser = new User({firstname, lastname, email, password});
+    if (existingVendor || existingUser) {
+      return res.status(400).json({ error: "An account with this email already exists" });
+    }
+
+    const newUser = new User({ firstname, lastname, email, password });
     await newUser.save();
 
     res.status(200).json(newUser);
@@ -40,7 +40,7 @@ const updateAvatar = asyncHandler(async (req, res) => {
   validateMongoDbId(userId);
   try {
     const fileUrl = path.join(req.file.filename);
-    const updatedUser = await User.findByIdAndUpdate(userId, {avatar: fileUrl}, { new: true });
+    const updatedUser = await User.findByIdAndUpdate(userId, { avatar: fileUrl }, { new: true });
     if (!updatedUser) {
       return res.status(404).json({ error: "User not found" });
     }
@@ -75,11 +75,11 @@ const saveAndUpdateAddress = asyncHandler(async (req, res) => {
   try {
     const updateAddress = await User.findByIdAndUpdate(
       userId,
-      { address: req.body.address },{ new: true });
+      { address: req.body.address }, { new: true });
     res.status(200).json(updateAddress);
   } catch (error) {
-      console.error(error);
-      throw new Error(error);
+    console.error(error);
+    throw new Error(error);
   }
 });
 
@@ -194,15 +194,18 @@ const forgotPasswordToken = asyncHandler(async (req, res) => {
     if (!user) throw new Error("User not found with this email address");
     const token = await user.createPasswordResetToken();
     await user.save();
-    const userName = user.firstname;
-    const resetURL = `Please follow this link to reset your password. This link is valid for 10 minutes from now. <a href= http://localhost:5000/api/user/reset-password/${token}> Reset Password </a>`;
-    const data = {
-      to: email,
-      text: `Hi ${userName}`,
-      subject: "Reset Forgotten Password",
-      htm: resetURL,
-    };
-    sendEmail(data);
+
+    const activationUrl = `<a href= http://localhost:5000/api/user/reset-password/${token}> Reset Password </a>`;
+    try {
+      sendEmail({
+        email: user.email,
+        subject: "Reset your password",
+        message: `Hello ${user.firstname}, please click on the link to reset your password. This link is valid for 10 minutes from now. ${activationUrl}`,
+      });
+      res.status(200).json(`Please check your email:- ${user.email} to reset your password!`);
+    } catch (error) {
+      throw new Error(error);
+    }
     res.status(200).json(token);
   } catch (error) {
     throw new Error(error);
@@ -242,3 +245,108 @@ module.exports = {
   saveAndUpdateAddress,
   updateAvatar,
 };
+
+
+
+
+// // update user addresses
+// router.put(
+//   "/update-user-addresses",
+//   isAuthenticated,
+//   catchAsyncErrors(async (req, res, next) => {
+//     try {
+//       const user = await User.findById(req.user.id);
+
+//       const sameTypeAddress = user.addresses.find(
+//         (address) => address.addressType === req.body.addressType
+//       );
+//       if (sameTypeAddress) {
+//         return next(
+//           new ErrorHandler(`${req.body.addressType} address already exists`)
+//         );
+//       }
+
+//       const existsAddress = user.addresses.find(
+//         (address) => address._id === req.body._id
+//       );
+
+//       if (existsAddress) {
+//         Object.assign(existsAddress, req.body);
+//       } else {
+//         // add the new address to the array
+//         user.addresses.push(req.body);
+//       }
+
+//       await user.save();
+
+//       res.status(200).json({
+//         success: true,
+//         user,
+//       });
+//     } catch (error) {
+//       return next(new ErrorHandler(error.message, 500));
+//     }
+//   })
+// );
+
+// // delete user address
+// router.delete(
+//   "/delete-user-address/:id",
+//   isAuthenticated,
+//   catchAsyncErrors(async (req, res, next) => {
+//     try {
+//       const userId = req.user._id;
+//       const addressId = req.params.id;
+
+//       console.log(addressId);
+
+//       await User.updateOne(
+//         {
+//           _id: userId,
+//         },
+//         { $pull: { addresses: { _id: addressId } } }
+//       );
+
+//       const user = await User.findById(userId);
+
+//       res.status(200).json({ success: true, user });
+//     } catch (error) {
+//       return next(new ErrorHandler(error.message, 500));
+//     }
+//   })
+// );
+
+// // update user password
+// router.put(
+//   "/update-user-password",
+//   isAuthenticated,
+//   catchAsyncErrors(async (req, res, next) => {
+//     try {
+//       const user = await User.findById(req.user.id).select("+password");
+
+//       const isPasswordMatched = await user.comparePassword(
+//         req.body.oldPassword
+//       );
+
+//       if (!isPasswordMatched) {
+//         return next(new ErrorHandler("Old password is incorrect!", 400));
+//       }
+
+//       if (req.body.newPassword !== req.body.confirmPassword) {
+//         return next(
+//           new ErrorHandler("Password doesn't matched with each other!", 400)
+//         );
+//       }
+//       user.password = req.body.newPassword;
+
+//       await user.save();
+
+//       res.status(200).json({
+//         success: true,
+//         message: "Password updated successfully!",
+//       });
+//     } catch (error) {
+//       return next(new ErrorHandler(error.message, 500));
+//     }
+//   })
+// );
