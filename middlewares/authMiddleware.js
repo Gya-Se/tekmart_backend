@@ -30,8 +30,8 @@ const authenticateVendor = asyncHandler(async (req, res, next) => {
         try {
             if (token) {
                 const decoded = jwt.verify(token, process.env.JWT_SECRET);
-                const user = await Vendor.findById(decoded?.id);
-                req.user = user;
+                const vendor = await Vendor.findById(decoded?.id);
+                req.vendor = vendor;
                 next();
             }
         }

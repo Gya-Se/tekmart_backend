@@ -3,7 +3,7 @@ const Vendor = require("../models/vendor.model");
 const sendEmail = require("./email.controller");
 const asyncHandler = require("express-async-handler");
 const validateMongoDbId = require("../utils/validateMongoDbId");
-const { generateToken } = require("../config/jwtToken");
+const { generateToken, createActivationToken } = require("../config/jwtToken");
 const { generateRefreshToken } = require("../config/refreshToken");
 const jwt = require("jsonwebtoken");
 const crypto = require("crypto");
@@ -24,25 +24,65 @@ const createUser = asyncHandler(async (req, res) => {
       return res.status(400).json({ error: "An account with this email already exists" });
     }
 
-    const newUser = new User({ firstname, lastname, email, password });
-    await newUser.save();
+    const user = {
+      firstname,
+      lastname,
+      email,
+      password
+    };
 
-    res.status(200).json(newUser);
+    const activationToken = createActivationToken(user);
+    const activationUrl = `<a href="http://localhost:5000/v1/api/user/activation/${activationToken}">Activate Account</a>`;
+    try {
+      sendEmail({
+        email: user.email,
+        subject: "Activate your account",
+        message: `Hello ${user.firstname}, please click on the link to activate your account. ${activationUrl}`,
+      });
+      res.status(201).json(`Please check your email:- ${user.email} to activate your account`);
+    } catch (error) {
+      throw new Error(error);
+    }
   } catch (error) {
     console.error(error);
     throw new Error(error);
   }
 });
 
+//Activate user
+const activateUser = asyncHandler(async (req, res) => {
+  try {
+    const { activation_token } = req.body;
+    const newUser = jwt.verify(activation_token, process.env.ACTIVATION_SECRET);
+
+    if (!newUser) {
+      throw new Error("Invalid token");
+    }
+    const { firstname, lastname, email, password } = newUser;
+
+    const newUserDetails = new Vendor(firstname, lastname, email, password);
+    await newUserDetails.save();
+    res.status(200).json(newUserDetails)
+
+  } catch (error) {
+    throw new Error(error);
+  }
+});
+
+
 // Update user avatar
 const updateAvatar = asyncHandler(async (req, res) => {
-  const userId = req.user;
+  const userId = req.user._id;
   validateMongoDbId(userId);
   try {
+    const vendor = await Vendor.findById(vendorId);
+    const existAvatarPath = `uploads/${vendor.avatar}`;
+    fs.unlinkSync(existAvatarPath);
+
     const fileUrl = path.join(req.file.filename);
     const updatedUser = await User.findByIdAndUpdate(userId, { avatar: fileUrl }, { new: true });
     if (!updatedUser) {
-      return res.status(404).json({ error: "User not found" });
+      return res.status(404).json("User not found");
     }
     res.status(200).json(updatedUser);
   } catch (error) {
@@ -53,13 +93,13 @@ const updateAvatar = asyncHandler(async (req, res) => {
 
 // Update user details
 const updateUser = asyncHandler(async (req, res) => {
-  const userId = req.user;
+  const userId = req.user._id;
   validateMongoDbId(userId);
   try {
-    const updates = req.body;
-    const updatedUser = await User.findByIdAndUpdate(userId, updates, { new: true });
+    const { firstname, lastname, phone } = req.body;
+    const updatedUser = await User.findByIdAndUpdate(userId, { firstname, lastname, phone }, { new: true });
     if (!updatedUser) {
-      return res.status(404).json({ error: "User not found" });
+      return res.status(404).json("User not found");
     }
     res.status(200).json(updatedUser);
   } catch (error) {
@@ -69,31 +109,72 @@ const updateUser = asyncHandler(async (req, res) => {
 });
 
 //Update Address
-const saveAndUpdateAddress = asyncHandler(async (req, res) => {
-  const userId = req.user;
+const updateAddress = asyncHandler(async (req, res) => {
+  const userId = req.user._id;
+  const { addressType, streetAddress, town } = req.body;
   validateMongoDbId(userId);
   try {
-    const updateAddress = await User.findByIdAndUpdate(
-      userId,
-      { address: req.body.address }, { new: true });
-    res.status(200).json(updateAddress);
+    const user = await User.findById(userId);
+
+    const sameTypeAddress = user.address.find(
+      (address) => address.addressType === addressType
+    );
+    if (sameTypeAddress) {
+      return next(
+        new Error(`${addressType} address already exists`)
+      );
+    }
+
+    const addressExists = user.address.find(
+      (address) => address._id === req.body._id
+    );
+
+    if (addressExists) {
+      Object.assign(addressExists, { streetAddress, town });
+    } else {
+      // add the new address to the array
+      user.address.push({ streetAddress, town });
+    }
+
+    await user.save();
+
+    res.status(200).json(user);
   } catch (error) {
     console.error(error);
     throw new Error(error);
   }
 });
 
+//Delete Address
+const deleteAddress = asyncHandler(async (req, res) => {
+  const userId = req.user._id;
+  const addressId = req.params.id;
+  validateMongoDbId(userId);
+  try {
+    await User.updateOne(
+      { _id: userId },
+      { $pull: { address: { _id: addressId } } }
+    );
+
+    const user = await User.findById(userId);
+
+    res.status(200).json(user);
+  } catch (error) {
+    console.error(error);
+    throw new Error(error);
+  }
+});
 
 // User delete account
 const deleteUser = asyncHandler(async (req, res) => {
-  const userId = req.user;
+  const userId = req.user._id;
   validateMongoDbId(userId);
   try {
     const deletedUser = await User.findByIdAndDelete(userId);
     if (!deletedUser) {
-      return res.status(404).json({ error: "User not found" });
+      return res.status(404).json("User not found");
     }
-    res.status(200).json({ message: "User deleted successfully" });
+    res.status(200).json("User deleted successfully");
   } catch (error) {
     console.error(error);
     throw new Error(error);
@@ -104,11 +185,10 @@ const deleteUser = asyncHandler(async (req, res) => {
 const userLogin = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
   const user = await User.findOne({ email });
+  if (user.role !== "customer" || user.role !== "admin") throw new Error("Not Authorised");
   if (user && (await user.isPasswordMatched(password))) {
-    const refreshToken = generateRefreshToken(user.id);
-    const updateuser = await User.findByIdAndUpdate(
-      user.id,
-      { refreshToken: refreshToken, },
+    const refreshToken = generateRefreshToken(user._id);
+    await User.findByIdAndUpdate(user._id, { refreshToken: refreshToken, },
       { new: true }
     );
     res.cookie("refreshToken", refreshToken, {
@@ -117,11 +197,11 @@ const userLogin = asyncHandler(async (req, res) => {
       secure: false,
     });
     res.json({
-      _id: user.id,
+      _id: user._id,
       firstname: user.firstname,
       lastname: user.lastname,
       email: user.email,
-      token: generateToken(user.id),
+      token: generateToken(user._id),
     });
   } else {
     throw new Error("Invalid Credentials");
@@ -136,10 +216,10 @@ const handleRefreshToken = asyncHandler(async (req, res) => {
   const user = await User.findOne({ refreshToken });
   if (!user) throw new Error("No Refresh Token present or matched");
   jwt.verify(refreshToken, process.env.JWT_SECRET, (err, decoded) => {
-    if (err || user.id !== decoded.id) {
+    if (err || user._id !== decoded.id) {
       throw new Error("There is something wrong with refresh token");
     }
-    const accessToken = generateToken(user?._id);
+    const accessToken = generateToken(user._id);
     res.json({ accessToken });
   });
 });
@@ -155,7 +235,7 @@ const logout = asyncHandler(async (req, res) => {
       httpOnly: true,
       secure: true,
     });
-    return res.sendStatus(204); //FORBIDDEN
+    return res.sendStatus(403); //FORBIDDEN
   }
   await User.findOneAndUpdate(refreshToken, {
     refreshToken: "",
@@ -164,23 +244,28 @@ const logout = asyncHandler(async (req, res) => {
     httpOnly: true,
     secure: true,
   });
-  res.sendStatus(204); //FORBIDDEN
+  res.status(201).json("Log out successful!");
+  res.sendStatus(403); //FORBIDDEN
 });
 
 //Update password
 const updatePassword = asyncHandler(async (req, res) => {
-  const userId = req.user;
-  const { password } = req.body;
+  const userId = req.user._id;
+  const { oldPassword, newPassword, confirmPassword } = req.body;
   validateMongoDbId(userId);
   try {
-    const user = await User.findById(userId);
-    if (password) {
-      user.password = password;
-      const updatedPassword = await user.save();
-      res.json(updatedPassword);
-    } else {
-      res.json(user);
+    const user = await User.findById(userId).select("+password");
+
+    const checkPassword = await user.isPasswordMatched(oldPassword);
+
+    if (!checkPassword) throw new Error("Old password is incorrect!");
+    if (newPassword !== confirmPassword) {
+      throw new Error("Password doesn't matched with each other!")
     }
+
+    user.password = newPassword;
+    await user.save();
+    res.json("Password updated successfully!");
   } catch (error) {
     throw new Error(error);
   }
@@ -195,7 +280,7 @@ const forgotPasswordToken = asyncHandler(async (req, res) => {
     const token = await user.createPasswordResetToken();
     await user.save();
 
-    const activationUrl = `<a href= http://localhost:5000/api/user/reset-password/${token}> Reset Password </a>`;
+    const activationUrl = `<a href= http://localhost:5000/v1/api/user/reset-password/${token}> Reset Password </a>`;
     try {
       sendEmail({
         email: user.email,
@@ -206,7 +291,6 @@ const forgotPasswordToken = asyncHandler(async (req, res) => {
     } catch (error) {
       throw new Error(error);
     }
-    res.status(200).json(token);
   } catch (error) {
     throw new Error(error);
   }
@@ -217,10 +301,8 @@ const resetPassword = asyncHandler(async (req, res) => {
   const { password } = req.body;
   const { token } = req.params;
   const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
-  //console.log(hashedToken);
-  //console.log(token);
+
   const user = await User.findOne({
-    //passwordResetToken: token,
     passwordResetToken: hashedToken,
     passwordResetExpires: { $gt: Date.now() },
   });
@@ -242,111 +324,8 @@ module.exports = {
   logout,
   resetPassword,
   updatePassword,
-  saveAndUpdateAddress,
+  updateAddress,
   updateAvatar,
+  activateUser,
+  deleteAddress,
 };
-
-
-
-
-// // update user addresses
-// router.put(
-//   "/update-user-addresses",
-//   isAuthenticated,
-//   catchAsyncErrors(async (req, res, next) => {
-//     try {
-//       const user = await User.findById(req.user.id);
-
-//       const sameTypeAddress = user.addresses.find(
-//         (address) => address.addressType === req.body.addressType
-//       );
-//       if (sameTypeAddress) {
-//         return next(
-//           new ErrorHandler(`${req.body.addressType} address already exists`)
-//         );
-//       }
-
-//       const existsAddress = user.addresses.find(
-//         (address) => address._id === req.body._id
-//       );
-
-//       if (existsAddress) {
-//         Object.assign(existsAddress, req.body);
-//       } else {
-//         // add the new address to the array
-//         user.addresses.push(req.body);
-//       }
-
-//       await user.save();
-
-//       res.status(200).json({
-//         success: true,
-//         user,
-//       });
-//     } catch (error) {
-//       return next(new ErrorHandler(error.message, 500));
-//     }
-//   })
-// );
-
-// // delete user address
-// router.delete(
-//   "/delete-user-address/:id",
-//   isAuthenticated,
-//   catchAsyncErrors(async (req, res, next) => {
-//     try {
-//       const userId = req.user._id;
-//       const addressId = req.params.id;
-
-//       console.log(addressId);
-
-//       await User.updateOne(
-//         {
-//           _id: userId,
-//         },
-//         { $pull: { addresses: { _id: addressId } } }
-//       );
-
-//       const user = await User.findById(userId);
-
-//       res.status(200).json({ success: true, user });
-//     } catch (error) {
-//       return next(new ErrorHandler(error.message, 500));
-//     }
-//   })
-// );
-
-// // update user password
-// router.put(
-//   "/update-user-password",
-//   isAuthenticated,
-//   catchAsyncErrors(async (req, res, next) => {
-//     try {
-//       const user = await User.findById(req.user.id).select("+password");
-
-//       const isPasswordMatched = await user.comparePassword(
-//         req.body.oldPassword
-//       );
-
-//       if (!isPasswordMatched) {
-//         return next(new ErrorHandler("Old password is incorrect!", 400));
-//       }
-
-//       if (req.body.newPassword !== req.body.confirmPassword) {
-//         return next(
-//           new ErrorHandler("Password doesn't matched with each other!", 400)
-//         );
-//       }
-//       user.password = req.body.newPassword;
-
-//       await user.save();
-
-//       res.status(200).json({
-//         success: true,
-//         message: "Password updated successfully!",
-//       });
-//     } catch (error) {
-//       return next(new ErrorHandler(error.message, 500));
-//     }
-//   })
-// );
