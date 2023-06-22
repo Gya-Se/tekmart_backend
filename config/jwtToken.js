@@ -6,7 +6,7 @@ const generateToken = (id) => {
 
 //Create activation token
 const createActivationToken = (user) => {
-    return jwt.sign(user, process.env.ACTIVATION_SECRET, {
+    return jwt.sign(user, process.env.JWT_SECRET, {
       expiresIn: "5m",
     });
   };

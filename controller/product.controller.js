@@ -156,7 +156,7 @@ const getAllProductUser = asyncHandler(async (req, res) => {
 
 //Vendor get all products of store
 const getVendorProducts = asyncHandler(async (req, res) => {
-  const vendorId = req.user._id;
+  const vendorId = req.vendor._id;
   validateMongoDbId(vendorId);
   try {
     const allProducts = await Product.find({ vendor: vendorId });
@@ -180,7 +180,15 @@ const userGetVendorProducts = asyncHandler(async (req, res) => {
     if (!allProducts) {
       return res.status(404).json({ error: "Vendor don't have any products yet" });
     }
-    res.json(allProducts);
+    const filteredProducts = []
+    counter = 0;
+    for (let i = 0; i < allProducts.length; i++){
+      if (allProducts[i].isBlocked === false) {
+        filteredProducts[counter] = allProducts[i]
+        counter += 1
+      }
+    }
+    res.json(filteredProducts);
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Server error' });

@@ -21,7 +21,7 @@ const router = express.Router();
 
 //POST ROUTE
 router.post("/register", createUser);
-router.post("/activation", activateUser);
+router.post("/activation/:token", activateUser);
 router.post("/login", userLogin);
 router.post("/forgot-password-token", forgotPasswordToken);
 

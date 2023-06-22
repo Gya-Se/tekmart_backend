@@ -37,7 +37,7 @@ const createUser = asyncHandler(async (req, res) => {
       sendEmail({
         email: user.email,
         subject: "Activate your account",
-        message: `Hello ${user.firstname}, please click on the link to activate your account. ${activationUrl}`,
+        htm: `Hello ${user.firstname}, please click on the link to activate your account. ${activationUrl}`,
       });
       res.status(201).json(`Please check your email:- ${user.email} to activate your account`);
     } catch (error) {
@@ -52,15 +52,15 @@ const createUser = asyncHandler(async (req, res) => {
 //Activate user
 const activateUser = asyncHandler(async (req, res) => {
   try {
-    const { activation_token } = req.body;
-    const newUser = jwt.verify(activation_token, process.env.ACTIVATION_SECRET);
+    const { token } = req.params;
+    const newUser = jwt.verify(token, process.env.JWT_SECRET);
 
     if (!newUser) {
       throw new Error("Invalid token");
     }
     const { firstname, lastname, email, password } = newUser;
 
-    const newUserDetails = new Vendor(firstname, lastname, email, password);
+    const newUserDetails = new User({firstname, lastname, email, password});
     await newUserDetails.save();
     res.status(200).json(newUserDetails)
 

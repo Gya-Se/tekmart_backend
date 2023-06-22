@@ -20,7 +20,7 @@ const router = express.Router();
 //POST ROUTE
 router.post("/register", createVendor);
 router.post("/forgot-password-token", forgotPasswordToken);
-router.post("/activation", activateVendor);
+router.post("/activation/:token", activateVendor);
 router.post("/login", vendorLogin);
 
 

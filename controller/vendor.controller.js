@@ -32,12 +32,12 @@ const createVendor = asyncHandler(async (req, res) => {
         };
 
         const activationToken = createActivationToken(vendor);
-        const activationUrl = `<a href="http://localhost:5000/v1/api/vendor/activation/${activationToken}">Activate Shop</a>`;
+        const activationUrl = `<a href="http://localhost:5000/v1/api/vendor/activation/${activationToken}"> Reset Password </a>`;
         try {
             sendEmail({
                 email: vendor.email,
                 subject: "Activate your shop",
-                message: `Hello ${vendor.shopName}, please click on the link to activate your shop. ${activationUrl}`,
+                htm: `Hello ${vendor.shopName}, please click on the link to activate your shop.${activationUrl}`,
             });
             res.status(201).json(`Please check your email:- ${vendor.email} to activate your shop.`);
         } catch (error) {
@@ -52,15 +52,15 @@ const createVendor = asyncHandler(async (req, res) => {
 //Activate vendor
 const activateVendor = asyncHandler(async (req, res) => {
     try {
-        const { activation_token } = req.body;
-        const newVendor = jwt.verify(activation_token, process.env.ACTIVATION_SECRET);
+        const { token } = req.params;
+        const newVendor = jwt.verify(token, process.env.JWT_SECRET);
 
         if (!newVendor) {
             throw new Error("Invalid token");
         }
-        const { shopName, email, password, phone } = newVendor;
+        const {shopName, email, password, phone} = newVendor
 
-        const newVendorDetails = new Vendor(shopName, email, password, phone);
+        const newVendorDetails = new Vendor({shopName, email, password, phone});
         await newVendorDetails.save();
         res.status(200).json(newVendorDetails)
 
@@ -128,7 +128,7 @@ const getVendor = asyncHandler(async (req, res) => {
         const vendor = await Vendor.findById(vendorId);
         if (!vendor) {
             return res.status(404).json("Vendor not found");
-          }
+        }
         res.status(200).json(vendor)
     } catch (error) {
         throw new Error(error);
@@ -141,8 +141,8 @@ const vendorLogin = asyncHandler(async (req, res) => {
     const vendor = await Vendor.findOne({ email });
 
     if (vendor.role !== "vendor") throw new Error("Not Authorised");
-  
-    if (vendor.isBlocked === true ) throw new Error("Your account is blocked. Contact our customer service for support on how to recover your account");
+
+    if (vendor.isBlocked === true) throw new Error("Your account is blocked. Contact our customer service for support on how to recover your account");
 
     if (vendor && (await vendor.isPasswordMatched(password))) {
         const refreshToken = generateRefreshToken(vendor._id);
