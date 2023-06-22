@@ -1,32 +1,23 @@
 const Product = require('../models/product.model');
 const asyncHandler = require("express-async-handler");
 const validateMongoDbId = require("../utils/validateMongoDbId");
+const fs = require("fs");
 
-
-// User, vendor and admin get product by ID
-const getProductById = asyncHandler(async (req, res) => {
-  const productId = req.params.id;
-  validateMongoDbId(productId);
-  try {
-    const product = await Product.findById(productId);
-    if (!product) {
-      return res.status(404).json({ error: 'Product not found' });
-    }
-    res.json(product);
-  } catch (error) {
-    console.error(error);
-    throw new Error(error);
-  }
-});
 
 // Vendor create a new product
 const createProduct = asyncHandler(async (req, res) => {
-  const vendor = req.user;
-  const { name, description, price, quantity } = req.body;
+  const vendor = req.user._id;
+  const product= req.body;
   validateMongoDbId(vendor);
   try {
     // Create new product
-    const newProduct = new Product({ vendor, name, description, price, quantity });
+    const files = req.files;
+    const imageUrls = files.map((file) => `${file.filename}`);
+
+    product.images = imageUrls;
+    product.vendor = vendor;
+
+    const newProduct = new Product({ product });
     await newProduct.save();
     res.json(newProduct);
   } catch (error) {
@@ -37,7 +28,7 @@ const createProduct = asyncHandler(async (req, res) => {
 
 // Vendor update product by ID
 const updateProductById = asyncHandler(async (req, res) => {
-  const vendorId = req.user;
+  const vendorId = req.user._id;
   const { productId } = req.body;
   validateMongoDbId(vendorId);
   validateMongoDbId(productId);
@@ -63,7 +54,7 @@ const updateProductById = asyncHandler(async (req, res) => {
 
 // Vendor delete product by ID
 const deleteProductById = asyncHandler(async (req, res) => {
-  const vendorId = req.user;
+  const vendorId = req.user._id;
   const productId = req.params.id;
   validateMongoDbId(vendorId);
   validateMongoDbId(productId);
@@ -75,6 +66,17 @@ const deleteProductById = asyncHandler(async (req, res) => {
     if (getVendor !== vendorId) throw new Error("Not Authorised");
 
     if (getVendor === vendorId) {
+      product.images.forEach((imageUrl) => {
+        const filename = imageUrl;
+        const filePath = `uploads/${filename}`;
+
+        fs.unlink(filePath, (err) => {
+          if (err) {
+            console.log(err);
+          }
+        });
+      });
+
       const deletedProduct = await Product.findByIdAndDelete(productId);
       if (!deletedProduct) {
         return res.status(404).json({ error: 'Product not found' });
@@ -83,6 +85,22 @@ const deleteProductById = asyncHandler(async (req, res) => {
     }
 
   } catch (error) {
+    throw new Error(error);
+  }
+});
+
+// User and vendor get product by ID
+const getProductById = asyncHandler(async (req, res) => {
+  const productId = req.params.id;
+  validateMongoDbId(productId);
+  try {
+    const product = await Product.findById(productId);
+    if (!product) {
+      return res.status(404).json({ error: 'Product not found' });
+    }
+    res.json(product);
+  } catch (error) {
+    console.error(error);
     throw new Error(error);
   }
 });
@@ -138,7 +156,7 @@ const getAllProductUser = asyncHandler(async (req, res) => {
 
 //Vendor get all products of store
 const getVendorProducts = asyncHandler(async (req, res) => {
-  const vendorId = req.user;
+  const vendorId = req.user._id;
   validateMongoDbId(vendorId);
   try {
     const allProducts = await Product.find({ vendor: vendorId });
@@ -171,35 +189,6 @@ const userGetVendorProducts = asyncHandler(async (req, res) => {
 
 
 
-
-
- //Upload images
- const uploadImages = asyncHandler(async (req, res) => {
-  const productId = req.params.id;
-  validateMongoDbId(productId);
-  try {
-      const uploader = (path) => cloudinaryUploadImg(path, "images");
-      const urls = [];
-      const files = req.files;
-      for (const file of files) {
-          const { path } = file;
-          const newpath = await uploader(path);
-          urls.push(newpath);
-          fs.unlinkSync(path);
-      }
-      const findProduct = await Product.findByIdAndUpdate(productId, {
-          images: urls.map((file) => {
-              return file;
-          }),
-      }, { new: true });
-      res.json(findProduct);
-  } catch (error) {
-      throw new Error(error);
-  }
-});
-
-
-
 module.exports = {
   getProductById,
   createProduct,
@@ -209,5 +198,4 @@ module.exports = {
   getVendorProducts,
   userGetVendorProducts,
 
-  uploadImages,
 };

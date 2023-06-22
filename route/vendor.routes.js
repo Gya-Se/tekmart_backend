@@ -10,13 +10,16 @@ const {
     handleRefreshToken,
     logout,
     deleteVendor,
-    saveAndUpdateAddress, } = require("../controller/vendor.controller");
-const {authenticateVendor} = require("../middlewares/authMiddleware");
+    updateAvatar,
+    activateVendor, } = require("../controller/vendor.controller");
+const { authenticateVendor } = require("../middlewares/authMiddleware");
+const { upload } = require("../multer");
 const router = express.Router();
 
 //POST ROUTE
 router.post("/register", createVendor);
 router.post("/forgot-password-token", forgotPasswordToken);
+router.post("/activation", activateVendor);
 router.post("/login", vendorLogin);
 
 
@@ -30,7 +33,7 @@ router.delete("/delete-vendor", authenticateVendor, deleteVendor);
 //PUT ROUTE
 router.put("/reset-password/:token", authenticateVendor, resetPassword);
 router.put("/update-password", authenticateVendor, updatePassword);
-router.put("/update-address", authenticateVendor, saveAndUpdateAddress);
+router.put("/update-avatar", authenticateVendor,   upload.single("image"), updateAvatar);
 router.put("/update-vendor", authenticateVendor, updateVendor); 
 
 //EXPORT ROUTE

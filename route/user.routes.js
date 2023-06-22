@@ -10,8 +10,10 @@ const {
     handleRefreshToken,
     logout,
     deleteUser,
-    saveAndUpdateAddress,} = require("../controller/user.controller");
-const {authenticateUser} = require("../middlewares/authMiddleware");
+    saveAndUpdateAddress,
+    updateAvatar,} = require("../controller/user.controller");
+const { authenticateUser } = require("../middlewares/authMiddleware");
+const { upload } = require("../multer");
 const router = express.Router();
 
 //POST ROUTE
@@ -29,6 +31,7 @@ router.delete("/delete-user", authenticateUser, deleteUser);
 //PUT ROUTE
 router.put("/update-user", authenticateUser, updateUser); 
 router.put("/update-address", authenticateUser, saveAndUpdateAddress);
+router.put("/update-avatar", authenticateUser,   upload.single("image"), updateAvatar);
 router.put("/update-password", authenticateUser, updatePassword);
 router.put("/reset-password/:token", authenticateUser, resetPassword);
 

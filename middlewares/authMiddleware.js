@@ -45,16 +45,12 @@ const authenticateVendor = asyncHandler(async (req, res, next) => {
 
 
 const isAdmin = asyncHandler(async (req, res, next) => {
-    const { id } = req.user;
-    try {
-        if (id.role === "admin") {
-            next();
-        }
-        else {
-            throw new Error("You are not an admin");
-        }
-    } catch (error) {
-        throw new Error(error)
+    const adminId = req.user._id;
+    if (adminId.role !== "admin") throw new Error("You are not an admin");
+    if (adminId.role === "admin") {
+        next();
     }
 })
+
+
 module.exports = { authenticateUser, authenticateVendor, isAdmin };

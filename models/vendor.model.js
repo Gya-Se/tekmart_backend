@@ -23,12 +23,7 @@ var VendorSchema = new mongoose.Schema({
     type: String,
   },
   address: {
-  streetAddress:{
     type: String,
-  },
-  town:{
-    type: String,
-  },
   },
   role: {
     type: String,
@@ -36,6 +31,7 @@ var VendorSchema = new mongoose.Schema({
   },
   avatar: {
     type: String,
+    default: "",
   },
   withdrawMethod: {
     type: Object,
@@ -70,7 +66,7 @@ VendorSchema.methods.isPasswordMatched = async function (enteredPassword) {
 VendorSchema.methods.createPasswordResetToken = async function () {
   const resettoken = crypto.randomBytes(32).toString("hex");
   this.passwordResetToken = crypto.createHash("sha256").update(resettoken).digest("hex");
-  this.passwordResetExpires = Date.now() + 30 + 60 + 1000; //10 Minutes
+  this.passwordResetExpires = Date.now() + 10 * 60 * 1000; //10 Minutes
   return resettoken;
 }
 

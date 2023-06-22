@@ -7,7 +7,7 @@ const validateMongoDbId = require("../utils/validateMongoDbId");
 
 // Add item to cart
 const addToCart = asyncHandler(async (req, res) => {
-  const userId = req.user;
+  const userId = req.user._id;
   const { quantity } = req.body;
   const { productId } = req.params.id;
   validateMongoDbId(userId);
@@ -42,7 +42,7 @@ const addToCart = asyncHandler(async (req, res) => {
 // Update product quantity in cart
 const updateCartProductQuantity = asyncHandler(async (req, res) => {
   const { productId } = req.params.id;
-  const userId = req.user;
+  const userId = req.user._id;
   const { quantity } = req.body;
   try {
     const cart = await Cart.findOne({ user: userId });
@@ -64,7 +64,7 @@ const updateCartProductQuantity = asyncHandler(async (req, res) => {
 
 // Remove product from cart
 const removeCartProduct = asyncHandler(async (req, res) => {
-  const userId = req.user;
+  const userId = req.user._id;
   const { product } = req.body;
   try {
     const cart = await Cart.findOne({ user });
@@ -88,7 +88,7 @@ const removeCartProduct = asyncHandler(async (req, res) => {
 
 //User get cart
 const getUserCart = asyncHandler(async (req, res) => {
-  const userId = req.user;
+  const userId = req.user._id;
   validateMongoDbId(userId);
   try {
     const cart = await Cart.findOne({ user: userId }).populate("products.product");
@@ -100,7 +100,7 @@ const getUserCart = asyncHandler(async (req, res) => {
 
 //User empty cart
 const emptyCart = asyncHandler(async (req, res) => {
-  const userId = req.user;
+  const userId = req.user._id;
   validateMongoDbId(userId);
   try {
     const cart = await Cart.findOneAndRemove({ user: userId });

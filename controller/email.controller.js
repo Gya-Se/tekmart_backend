@@ -2,29 +2,27 @@ const nodemailer = require("nodemailer");
 const asyncHandler = require("express-async-handler");
 
 const sendEmail = asyncHandler(async (data, req, res) => {
-    try {
-    const transporter = nodemailer.createTransport({
-    host: "smtp.gmail.com",
-   port: 587,
-   secure: false,
-   auth: {
-   user: process.env.MAIL_ID,
-   pass: process.env.MP,
-   }, 
-});
+   try {
+      const transporter = nodemailer.createTransport({
+         host: process.env.SMPT_HOST,
+         port: process.env.SMPT_PORT,
+         service: process.env.SMPT_SERVICE,
+         auth: {
+            user: process.env.SMPT_MAIL,
+            pass: process.env.SMPT_PASSWORD,
+         }, 
+      });
    
-  let info =  await transporter.sendMail({
-    from: '"Tekmart Support Team" <abc@gmail.com>',
-    to: data.to,
-   subject: data.subject,
-   text: data.text,
-   html: data.htm,
-});
+      let info =  await transporter.sendMail({
+         from: process.env.SMPT_MAIL,
+         to: data.email,
+         subject: data.subject,
+         text: data.message,
+         html: data.htm,
+      });
    
-   console.log("Message sent: %s", info.messageId);
-
-   console.log("Preview URL: %s", nodemailer.getTestMessageUrl(info));
-
+      console.log("Message sent: %s", info.messageId);
+      console.log("Preview URL: %s", nodemailer.getTestMessageUrl(info));
    } catch (error) {
     console.log(error, "email not sent"); } 
 });

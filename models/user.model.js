@@ -20,6 +20,7 @@ const UserSchema = new mongoose.Schema({
   },
   avatar: {
     type: String,
+    default: "",
   },
   phone: {
     type: String,
@@ -39,7 +40,6 @@ const UserSchema = new mongoose.Schema({
     type: String,
     default: 'customer'
   },
-  cart: [],
     refreshToken: {
      type: String,
     },

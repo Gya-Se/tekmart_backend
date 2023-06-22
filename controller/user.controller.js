@@ -7,10 +7,10 @@ const { generateToken } = require("../config/jwtToken");
 const { generateRefreshToken } = require("../config/refreshToken");
 const jwt = require("jsonwebtoken");
 const crypto = require("crypto");
+const fs = require("fs");
 
 
 // Create a new user
-//POST request
 const createUser = asyncHandler(async (req, res) => {
   try {
     //Get user details
@@ -34,8 +34,24 @@ const createUser = asyncHandler(async (req, res) => {
   }
 });
 
+// Update user avatar
+const updateAvatar = asyncHandler(async (req, res) => {
+  const userId = req.user;
+  validateMongoDbId(userId);
+  try {
+    const fileUrl = path.join(req.file.filename);
+    const updatedUser = await User.findByIdAndUpdate(userId, {avatar: fileUrl}, { new: true });
+    if (!updatedUser) {
+      return res.status(404).json({ error: "User not found" });
+    }
+    res.status(200).json(updatedUser);
+  } catch (error) {
+    console.error(error);
+    throw new Error(error);
+  }
+});
+
 // Update user details
-//PUT request
 const updateUser = asyncHandler(async (req, res) => {
   const userId = req.user;
   validateMongoDbId(userId);
@@ -53,7 +69,6 @@ const updateUser = asyncHandler(async (req, res) => {
 });
 
 //Update Address
-//PUT request
 const saveAndUpdateAddress = asyncHandler(async (req, res) => {
   const userId = req.user;
   validateMongoDbId(userId);
@@ -70,7 +85,6 @@ const saveAndUpdateAddress = asyncHandler(async (req, res) => {
 
 
 // User delete account
-//DELETE request
 const deleteUser = asyncHandler(async (req, res) => {
   const userId = req.user;
   validateMongoDbId(userId);
@@ -87,7 +101,6 @@ const deleteUser = asyncHandler(async (req, res) => {
 });
 
 //User login
-//POST request
 const userLogin = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
   const user = await User.findOne({ email });
@@ -116,7 +129,6 @@ const userLogin = asyncHandler(async (req, res) => {
 });
 
 //Handle refresh token
-//GET request
 const handleRefreshToken = asyncHandler(async (req, res) => {
   const cookie = req.cookies;
   if (!cookie.refreshToken) throw new Error("No Refresh Token in Cookies");
@@ -133,7 +145,6 @@ const handleRefreshToken = asyncHandler(async (req, res) => {
 });
 
 //Handle logout
-//GET request
 const logout = asyncHandler(async (req, res) => {
   const cookie = req.cookies;
   if (!cookie.refreshToken) throw new Error("No Refresh Token in Cookies");
@@ -157,7 +168,6 @@ const logout = asyncHandler(async (req, res) => {
 });
 
 //Update password
-//PUT request
 const updatePassword = asyncHandler(async (req, res) => {
   const userId = req.user;
   const { password } = req.body;
@@ -177,7 +187,6 @@ const updatePassword = asyncHandler(async (req, res) => {
 });
 
 //Forgot password token
-//POST request
 const forgotPasswordToken = asyncHandler(async (req, res) => {
   const { email } = req.body;
   try {
@@ -201,7 +210,6 @@ const forgotPasswordToken = asyncHandler(async (req, res) => {
 });
 
 //Reset password
-//PUT request
 const resetPassword = asyncHandler(async (req, res) => {
   const { password } = req.body;
   const { token } = req.params;
@@ -232,4 +240,5 @@ module.exports = {
   resetPassword,
   updatePassword,
   saveAndUpdateAddress,
+  updateAvatar,
 };
