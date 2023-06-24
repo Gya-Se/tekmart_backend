@@ -32,7 +32,7 @@ const createUser = asyncHandler(async (req, res) => {
     };
 
     const activationToken = createActivationToken(user);
-    const activationUrl = `<a href="http://localhost:5000/v1/api/user/activation/${activationToken}">Activate Account</a>`;
+    const activationUrl = `<a https://tekmart-backend.vercel.app/v1/api/user/activation/${activationToken}">Activate Account</a>`;
     try {
       sendEmail({
         email: user.email,
@@ -65,6 +65,7 @@ const activateUser = asyncHandler(async (req, res) => {
     res.status(200).json(newUserDetails)
 
   } catch (error) {
+    console.error(error);
     throw new Error(error);
   }
 });

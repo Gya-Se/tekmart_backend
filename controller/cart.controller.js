@@ -1,5 +1,3 @@
-const User = require("../models/user.model");
-const Product = require("../models/product.model");
 const Cart = require("../models/cart.model");
 const asyncHandler = require("express-async-handler");
 const validateMongoDbId = require("../utils/validateMongoDbId");
@@ -67,7 +65,7 @@ const removeCartProduct = asyncHandler(async (req, res) => {
   const userId = req.user._id;
   const { product } = req.body;
   try {
-    const cart = await Cart.findOne({ user });
+    const cart = await Cart.findOne({ userId });
     if (!cart) {
       return res.status(404).json({ error: "Cart not found" });
     }

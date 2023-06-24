@@ -19,22 +19,28 @@ const OrderSchema = new mongoose.Schema({
       type: Number,
     }
   }],
-  totalAmount: {
+  totalPrice: {
     type: Number,
     required: true
   },
-  paymentIntent: {
-    type: String,
-    required: true
-  },
+  paymentInfo:{
+    id:{
+        type: String,
+    },
+    status: {
+        type: String,
+    },
+    type:{
+        type: String,
+    },
+},
   shippingAddress: {
-    type: Array,
+    type: Object,
     required: true
   },
   status: {
     type: String,
-    enum: ['pending', 'confirmed', 'shipped', 'delivered'],
-    default: 'pending'
+    default: 'Processing'
   },
 }, { timestamps: true });
 

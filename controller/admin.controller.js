@@ -223,57 +223,6 @@ const getAllProducts = asyncHandler(async (req, res) => {
   }
 });
 
-// Block user account
-const blockAndUnblockProduct = asyncHandler(async (req, res) => {
-  const productId = req.params.id;
-  validateMongoDbId(productId);
-  try {
-    let blockedProduct;
-    const product = await Product.findById(productId);
-    const vendorId = product.vendor.toString();
-
-    const vendor = await Vendor.findById(vendorId);
-
-    if (!product) {
-      return res.status(404).json('Product not found');
-    }
-
-    if (product.isBlocked === true) {
-      blockedProduct = await Product.findByIdAndUpdate(productId, { isBlocked: false }, { new: true });
-
-      try {
-        sendEmail({
-          email: vendor.email,
-          subject: "Your product is unblocked",
-          message: `Hello ${vendor.shopName}, Your product with name ${product.name} and description "${product.description}" is unblocked. Kindly follow our rules to prevent your product from being blocked again.`,
-        });
-      } catch (error) {
-        throw new Error(error);
-      }
-
-      res.json('Product unblocked successfully');
-    }
-    else {
-      blockedProduct = await Product.findByIdAndUpdate(productId, { isBlocked: true }, { new: true });
-
-      try {
-        sendEmail({
-          email: vendor.email,
-          subject: "Your product is blocked",
-          message: `Hello ${vendor.shopName}, Your product with name ${product.name} and description "${product.description}" is blocked since it doesn't follow our rules.`,
-        });
-      } catch (error) {
-        throw new Error(error);
-      }
-      res.json('Product blocked successfully');
-    }
-
-  } catch (error) {
-    console.error(error);
-    res.status(500).json('Server error');
-  }
-});
-
 // Delete a product
 const deleteProduct = asyncHandler(async (req, res) => {
   const productId = req.params.id;
@@ -348,6 +297,17 @@ const vendorWithdrew = asyncHandler(async (req, res) => {
 
 //****************  ORDER ********************************/
 
+// Get all orders
+const getAllOrders = asyncHandler (async (req, res) => {
+  try {
+    const orders = await Order.find();
+    res.json(orders);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
 // Update user order status after payment
 const updateOrderStatus = asyncHandler(async (req, res) => {
   const orderId = req.params.id;
@@ -362,6 +322,22 @@ const updateOrderStatus = asyncHandler(async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).json('Server error');
+  }
+});
+
+// Get order by ID
+const getOrderById = asyncHandler (async (req, res) => {
+  const orderId = req.params.id;
+  validateMongoDbId(orderId);
+  try {
+    const order = await Order.findById(orderId);
+    if (!order) {
+      return res.status(404).json({ error: 'Order not found' });
+    }
+    res.json(order);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Server error' });
   }
 });
 
@@ -380,10 +356,11 @@ module.exports = {
   getAllProducts,
   getProduct,
   deleteProduct,
-  blockAndUnblockProduct,
 
   allWithdrawals,
   vendorWithdrew,
 
   updateOrderStatus,
+  getAllOrders,
+  getOrderById,
 };

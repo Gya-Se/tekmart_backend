@@ -6,16 +6,16 @@ const fs = require("fs");
 
 // Vendor create a new product
 const createProduct = asyncHandler(async (req, res) => {
-  const vendor = req.user._id;
+  const vendorId = req.vendor._id;
   const product= req.body;
-  validateMongoDbId(vendor);
+  validateMongoDbId(vendorId);
   try {
     // Create new product
     const files = req.files;
     const imageUrls = files.map((file) => `${file.filename}`);
 
     product.images = imageUrls;
-    product.vendor = vendor;
+    product.vendor = vendorId;
 
     const newProduct = new Product({ product });
     await newProduct.save();
@@ -28,7 +28,7 @@ const createProduct = asyncHandler(async (req, res) => {
 
 // Vendor update product by ID
 const updateProductById = asyncHandler(async (req, res) => {
-  const vendorId = req.user._id;
+  const vendorId = req.vendor._id;
   const { productId } = req.body;
   validateMongoDbId(vendorId);
   validateMongoDbId(productId);
@@ -54,7 +54,7 @@ const updateProductById = asyncHandler(async (req, res) => {
 
 // Vendor delete product by ID
 const deleteProductById = asyncHandler(async (req, res) => {
-  const vendorId = req.user._id;
+  const vendorId = req.vendor._id;
   const productId = req.params.id;
   validateMongoDbId(vendorId);
   validateMongoDbId(productId);
@@ -170,7 +170,6 @@ const getVendorProducts = asyncHandler(async (req, res) => {
   }
 });
 
-
 //User get all products of a vendor's store
 const userGetVendorProducts = asyncHandler(async (req, res) => {
   const vendorId = req.params.id;
@@ -180,15 +179,7 @@ const userGetVendorProducts = asyncHandler(async (req, res) => {
     if (!allProducts) {
       return res.status(404).json({ error: "Vendor don't have any products yet" });
     }
-    const filteredProducts = []
-    counter = 0;
-    for (let i = 0; i < allProducts.length; i++){
-      if (allProducts[i].isBlocked === false) {
-        filteredProducts[counter] = allProducts[i]
-        counter += 1
-      }
-    }
-    res.json(filteredProducts);
+    res.json(allProducts);
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Server error' });

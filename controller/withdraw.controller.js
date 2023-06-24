@@ -7,8 +7,8 @@ const validateMongoDbId = require("../utils/validateMongoDbId");
 
 // Create or request for a withdrawal
 const createWithdrawal = asyncHandler(async (req, res) => {
-  const vendorId = req.user._id;
-  const { shopName, email } = req.user;
+  const vendorId = req.vendor._id;
+  const { shopName, email } = req.vendor;
   const { amount } = req.body;
   validateMongoDbId(vendorId);
   try {
@@ -46,7 +46,7 @@ const createWithdrawal = asyncHandler(async (req, res) => {
 
 // Get all wthdrawals of a vendor
 const getAllWithdrawals = asyncHandler(async (req, res) => {
-  const vendorId = req.user._id;
+  const vendorId = req.vendor._id;
   validateMongoDbId(vendorId);
   try {
     const allWithdrawals = await Withdraw.find({ vendor: vendorId }).sort({ createdAt: -1 });
@@ -61,7 +61,7 @@ const getAllWithdrawals = asyncHandler(async (req, res) => {
 
 // Get withdrawal of a vendor
 const getaWithdrawal = asyncHandler(async (req, res) => {
-  const vendorId = req.user._id;
+  const vendorId = req.vendor._id;
   const withdrawId = req.params.id;
   validateMongoDbId(vendorId);
   try {
@@ -82,9 +82,9 @@ const getaWithdrawal = asyncHandler(async (req, res) => {
   }
 });
 
-// Get withdrawal of a vendor
+// Update withdrawal method of a vendor
 const updatePaymentMethod = asyncHandler(async (req, res) => {
-  const vendorId = req.user._id;
+  const vendorId = req.vendor._id;
   validateMongoDbId(vendorId);
   const { withdrawMethod } = req.body;
   try {
@@ -96,9 +96,9 @@ const updatePaymentMethod = asyncHandler(async (req, res) => {
 });
 
 
-// Get withdrawal of a vendor
+// Delete payment method of a vendor
 const deletePaymentMethod = asyncHandler(async (req, res) => {
-  const vendorId = req.user._id;
+  const vendorId = req.vendor._id;
   validateMongoDbId(vendorId);
   try {
     const vendor = await Vendor.findById(req.seller._id);

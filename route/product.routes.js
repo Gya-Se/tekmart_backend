@@ -10,6 +10,7 @@ const {
     getProductById, } = require("../controller/product.controller");
 const {authenticateVendor, authenticateUser} = require("../middlewares/authMiddleware");
 const { upload } = require("../middlewares/multer");
+const { review } = require("../controller/review.controller");
 const router = express.Router();
 
 //POST ROUTE
@@ -26,6 +27,7 @@ router.delete("/delete-product/:id", authenticateVendor, deleteProductById);
 
 //PUT ROUTE
 router.put("/update-product/:id", authenticateVendor, updateProductById);
+router.put("/review-product/:id", authenticateUser, review);
 
 
 //EXPORT ROUTE
