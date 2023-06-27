@@ -45,6 +45,10 @@ app.use(errorHandler);
 //Connecting to database
 dbConnect();
 
+
+//Creating a portal  to listen from
+app.get('/', (req, res) => res.json("Server works!"))
+
 //Creating a portal  to listen from
   app.listen(PORT, () => {
   console.log(`Server started on port http://localhost:${PORT}`);
