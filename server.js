@@ -33,10 +33,10 @@ app.use("/v1/api/user", userRouter);
 app.use("/v1/api/vendor", vendorRouter);
 app.use("/v1/api/admin", adminRouter);
 app.use("/v1/api/product", productRouter);
-// app.use("/v1/api/transaction", transactionRouter);
-// app.use("/v1/api/withdraw", withdrawRouter);
-// app.use("/v1/api/order", orderRouter);
-// app.use("/v1/api/cart", cartRouter);
+app.use("/v1/api/transaction", transactionRouter);
+app.use("/v1/api/withdraw", withdrawRouter);
+app.use("/v1/api/order", orderRouter);
+app.use("/v1/api/cart", cartRouter);
 
 //Error handlers
 app.use(notFound);

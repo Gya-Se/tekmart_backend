@@ -47,7 +47,9 @@ const createAnOrder = asyncHandler(async (req, res) => {
 const updateOrderStatus = asyncHandler(async (req, res) => {
   const { status } = req.body;
   const orderId = req.params.id;
+  const vendorId = req.params.id;
   validateMongoDbId(orderId);
+  validateMongoDbId(vendorId);
   try {
     const order = await Order.findById(orderId);
 
@@ -80,7 +82,7 @@ const updateOrderStatus = asyncHandler(async (req, res) => {
     }
 
     async function updateSellerInfo(amount) {
-      const vendor = await Shop.findById(req.seller.id);
+      const vendor = await Shop.findById(vendorId);
       vendor.availableBalance = amount;
       await vendor.save();
     }
@@ -139,15 +141,16 @@ const vendorGetAllOrders = asyncHandler(async (req, res) => {
   }
 });
 
-//User get order by Id
+//User request refund
 const refundRequest = asyncHandler(async (req, res) => {
   const orderId = req.params.id;
+  const status =  req.body.status;
   validateMongoDbId(orderId);
   try {
     const order = await Order.findById(orderId);
     if (!order) throw new Error("Order not found");
 
-    order.status = req.body.status;
+    order.status = status;
     await order.save({ validateBeforeSave: false });
 
     res.status(200).json({

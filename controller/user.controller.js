@@ -60,7 +60,7 @@ const activateUser = asyncHandler(async (req, res) => {
     }
     const { firstname, lastname, email, password } = newUser;
 
-    const newUserDetails = new User({firstname, lastname, email, password});
+    const newUserDetails = new User({ firstname, lastname, email, password });
     await newUserDetails.save();
     res.status(200).json(newUserDetails)
 
@@ -202,8 +202,8 @@ const userLogin = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
   const user = await User.findOne({ email });
 
-  if (user.isBlocked === true ) throw new Error("Your account is blocked. Contact our customer service for support on how to recover your account");
-  
+  if (user.isBlocked === true) throw new Error("Your account is blocked. Contact our customer service for support on how to recover your account");
+
   if (user && (await user.isPasswordMatched(password))) {
     const refreshToken = generateRefreshToken(user._id);
     await User.findByIdAndUpdate(user._id, { refreshToken: refreshToken, },

@@ -63,7 +63,7 @@ const updateCartProductQuantity = asyncHandler(async (req, res) => {
 // Remove product from cart
 const removeCartProduct = asyncHandler(async (req, res) => {
   const userId = req.user._id;
-  const { product } = req.body;
+  const productId  = req.params._id;
   try {
     const cart = await Cart.findOne({ userId });
     if (!cart) {
@@ -71,7 +71,7 @@ const removeCartProduct = asyncHandler(async (req, res) => {
     }
     // Find the item in the cart and remove it
     const itemIndex = cart.items.findIndex(
-      (item) => item.product.toString() === product
+      (item) => item.product.toString() === productId
     );
     if (itemIndex === -1) {
       return res.status(404).json({ error: "Item not found in cart" });

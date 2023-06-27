@@ -1,4 +1,3 @@
-// const Vendor = require('../models/vendor.model');
 const Withdraw = require('../models/withdraw.model');
 const Vendor = require('../models/vendor.model');
 const asyncHandler = require("express-async-handler");
@@ -101,7 +100,7 @@ const deletePaymentMethod = asyncHandler(async (req, res) => {
   const vendorId = req.vendor._id;
   validateMongoDbId(vendorId);
   try {
-    const vendor = await Vendor.findById(req.seller._id);
+    const vendor = await Vendor.findById(vendorId);
 
     if (!vendor) {
       return new Error("Vendor not found");
