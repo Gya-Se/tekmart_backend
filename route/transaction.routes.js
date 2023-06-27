@@ -2,7 +2,7 @@ const express = require("express");
 const {
     // createTransaction,
     getUserTransactions,
-    getUserTransactions, } = require("../controller/transaction.controller");
+    getUserTransactionById, } = require("../controller/transaction.controller");
 const { authenticateUser } = require("../middlewares/authMiddleware");
 const router = express.Router();
 
@@ -11,7 +11,7 @@ const router = express.Router();
 
 //Get route
 router.get("/", authenticateUser, getUserTransactions);
-router.get("/:id", authenticateUser, getUserTransactions);
+router.get("/:id", authenticateUser, getUserTransactionById);
 
 //Put route
 
