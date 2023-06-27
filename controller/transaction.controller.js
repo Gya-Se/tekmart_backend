@@ -3,20 +3,20 @@ const asyncHandler = require("express-async-handler");
 const validateMongoDbId = require("../utils/validateMongoDbId");
 
 
-// Create a new transaction
-const createTransaction = asyncHandler(async (req, res) => {
-  try {
-    const userId = req.user._id;
-    const { products, totalAmount, paymentMethod } = req.body;
+// // Create a new transaction
+// const createTransaction = asyncHandler(async (req, res) => {
+//   try {
+//     const userId = req.user._id;
+//     const { products, totalAmount, paymentMethod } = req.body;
 
-    // Create new transaction
-    const newTransaction = new Transaction({ userId, products, totalAmount, paymentMethod });
-    await newTransaction.save();
-    res.status(201).json(newTransaction);
-  } catch (error) {
-    throw new Error(error);
-  }
-});
+//     // Create new transaction
+//     const newTransaction = new Transaction({ userId, products, totalAmount, paymentMethod });
+//     await newTransaction.save();
+//     res.status(201).json(newTransaction);
+//   } catch (error) {
+//     throw new Error(error);
+//   }
+// });
 
 // Get all transactions for a user
 const getUserTransactions = asyncHandler(async (req, res) => {
@@ -37,7 +37,7 @@ const getUserTransactionById = asyncHandler(async (req, res) => {
   validateMongoDbId(userId);
   validateMongoDbId(transactId);
   try {
-    const transact = await Transaction.findOne({ productId });
+    const transact = await Transaction.findOne({ transactId });
     const getUser = transact.user.toString();
 
     if (getUser !== userId) throw new Error("Not Authorised");
@@ -55,7 +55,7 @@ const getUserTransactionById = asyncHandler(async (req, res) => {
 
 
 module.exports = {
-  createTransaction,
+  // createTransaction,
   getUserTransactions,
   getUserTransactionById,
 }

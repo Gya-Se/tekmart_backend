@@ -7,7 +7,7 @@ const fs = require("fs");
 // Vendor create a new product
 const createProduct = asyncHandler(async (req, res) => {
   const vendorId = req.vendor._id;
-  const product= req.body;
+  const product = req.body;
   validateMongoDbId(vendorId);
   try {
     // Create new product
@@ -27,13 +27,13 @@ const createProduct = asyncHandler(async (req, res) => {
 });
 
 // Vendor update product by ID
-const updateProductById = asyncHandler(async (req, res) => {
+const updateProduct = asyncHandler(async (req, res) => {
   const vendorId = req.vendor._id;
   const { productId } = req.body;
   validateMongoDbId(vendorId);
   validateMongoDbId(productId);
   try {
-    const product = await Product.findOne({ vendor: vendorId });
+    const product = await Product.findOne({ productId });
     const checkVendor = product.vendor.toString();
 
     if (checkVendor !== vendorId) throw new Error("Not Authorised");
@@ -53,7 +53,7 @@ const updateProductById = asyncHandler(async (req, res) => {
 });
 
 // Vendor delete product by ID
-const deleteProductById = asyncHandler(async (req, res) => {
+const deleteProduct = asyncHandler(async (req, res) => {
   const vendorId = req.vendor._id;
   const productId = req.params.id;
   validateMongoDbId(vendorId);
@@ -90,7 +90,7 @@ const deleteProductById = asyncHandler(async (req, res) => {
 });
 
 // User and vendor get product by ID
-const getProductById = asyncHandler(async (req, res) => {
+const getProduct = asyncHandler(async (req, res) => {
   const productId = req.params.id;
   validateMongoDbId(productId);
   try {
@@ -105,8 +105,22 @@ const getProductById = asyncHandler(async (req, res) => {
   }
 });
 
+// User get  all products
+const getAllProducts = asyncHandler(async (req, res) => {
+  try {
+    const products = await Product.find().sort({ createdAt: -1 });
+    if (!products) {
+      return res.status(404).json({ error: 'Products not found' });
+    }
+    res.json(products);
+  } catch (error) {
+    console.error(error);
+    throw new Error(error);
+  }
+});
+
 //User get all product to filter, sort and paginate
-const getAllProductUser = asyncHandler(async (req, res) => {
+const productSearch = asyncHandler(async (req, res) => {
   try {
     //FILTERING
     const queryObj = { ...req.query };
@@ -189,12 +203,12 @@ const userGetVendorProducts = asyncHandler(async (req, res) => {
 
 
 module.exports = {
-  getProductById,
+  getProduct,
   createProduct,
-  updateProductById,
-  deleteProductById,
-  getAllProductUser,
+  updateProduct,
+  deleteProduct,
+  productSearch,
+  getAllProducts,
   getVendorProducts,
   userGetVendorProducts,
-
 };

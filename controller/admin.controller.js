@@ -300,7 +300,36 @@ const vendorWithdrew = asyncHandler(async (req, res) => {
 // Get all orders
 const getAllOrders = asyncHandler (async (req, res) => {
   try {
-    const orders = await Order.find();
+    const orders = await Order.find().sort({
+      deliveredAt: -1,
+      createdAt: -1,
+    });
+    res.json(orders);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// Get all orders of a user
+const getAllOrdersOfUser = asyncHandler(async (req, res) => {
+  const userId = req.params.id;
+  validateMongoDbId(userId);
+  try {
+    const orders = await Order.find({"user._id": userId}).sort({createdAt: -1,});
+    res.json(orders);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// Get all orders of a vendor
+const getAllOrdersOfVendor = asyncHandler(async (req, res) => {
+  const vendorId = req.params.id;
+  validateMongoDbId(vendorId);
+  try {
+    const orders = await Order.find({"products.vendor": vendorId}).sort({createdAt: -1,});
     res.json(orders);
   } catch (error) {
     console.error(error);
@@ -363,4 +392,6 @@ module.exports = {
   updateOrderStatus,
   getAllOrders,
   getOrderById,
+  getAllOrdersOfUser,
+  getAllOrdersOfVendor
 };

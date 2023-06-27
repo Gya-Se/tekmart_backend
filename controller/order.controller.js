@@ -1,167 +1,207 @@
 const Order = require('../models/order.model');
+const Product = require('../models/product.model');
+const Cart = require('../models/cart.model');
 const asyncHandler = require("express-async-handler");
 const validateMongoDbId = require("../utils/validateMongoDbId");
 
-// Get order by ID
-const getOrderById = asyncHandler(async (req, res) => {
-  const orderId = req.params.id;
-  const vendorId = req.params.id;
-  validateMongoDbId(vendorId);
-  validateMongoDbId(orderId);
-  try {
 
-    const order = await Order.findOne({ orderId });
-    const checkVendor = order.vendor.toString();
-
-    if (checkVendor !== vendorId) throw new Error("Not Authorised");
-
-    if (checkVendor === vendorId) {
-      const getOrder = await Order.find({ orderId });
-      if (!getOrder) {
-        return res.status(404).json({ error: 'Order not found' });
-      }
-      res.status(200).json(order);
-    };
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Server error' });
-  }
-});
-
-// Create a new order
-const createOrder = asyncHandler(async (req, res) => {
-  try {
-    const { shippingAddress, paymentIntent, products, totalAmount, userId } = req.body;
-    // Create new order
-    const newOrder = new Order({ shippingAddress, paymentIntent, products, totalAmount, user: userId });
-    await newOrder.save();
-    res.json(newOrder);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Server error' });
-  }
-});
-
-// Update order by ID
-const updateOrderById = asyncHandler(async (req, res) => {
-  const orderId = req.params.id;
-  const userId = req.vendor._id;
+//Create order
+const createAnOrder = asyncHandler(async (req, res) => {
+  const userId = req.user._id;
+  const { deliveryAddress, totalPrice, paymentInfo } = req.body;
   validateMongoDbId(userId);
-  validateMongoDbId(orderId);
   try {
-    const updates = req.body;
-    const updatedOrder = await Order.findByIdAndUpdate(orderId, updates, { new: true });
-    if (!updatedOrder) {
-      return res.status(404).json({ error: 'Order not found' });
+    const userCart = await Cart.findOne({ user: userId });
+
+    //   group cart items by vendorId
+    const vendorItemsMap = new Map();
+
+    for (const item of userCart) {
+      const vendor = item.vendor;
+      if (!shopItemsMap.has(vendor)) {
+        shopItemsMap.set(vendor, []);
+      }
+      shopItemsMap.get(vendor).push(item);
     }
-    res.json(updatedOrder);
+
+    // create an order for each shop
+    const orders = [];
+
+    for (const [vendor, items] of shopItemsMap) {
+      const order = await Order.create({
+        cart: items,
+        deliveryAddress,
+        user,
+        totalPrice,
+        paymentInfo,
+      });
+      orders.push(order);
+    }
+    res.status(200).json(orders);
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Server error' });
+    throw new Error(error);
   }
 });
 
-// Delete order by ID
-const deleteOrderById = asyncHandler(async (req, res) => {
-  const orderId = req.params.id;
-  validateMongoDbId(orderId);
-  try {
-    const deletedOrder = await Order.findByIdAndDelete(orderId);
-    if (!deletedOrder) {
-      return res.status(404).json({ error: 'Order not found' });
-    }
-    res.json({ message: 'Order deleted successfully' });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Server error' });
-  }
-});
-
-//UPDATE ORDER STATUS
+//Update order status
 const updateOrderStatus = asyncHandler(async (req, res) => {
   const { status } = req.body;
-  const { id } = req.user;
-  validateMongoDbId(id);
+  const orderId = req.params.id;
+  validateMongoDbId(orderId);
   try {
-    const updateOrdStatus = await Order.findByIdAndUpdate(
-      id,
-      {
-        orderStatus: status,
-        paymentIntent: {
-          status: status,
-        },
-      }, {
-      new: true,
-    },
-    )
-    res.json(updateOrdStatus);
+    const order = await Order.findById(orderId);
+
+    if (!order) throw new Error("Order not found with this id");
+
+    if (status === "Handed over for delivery") {
+      order.products.forEach(async (o) => {
+        await updateOrder(o._id, o.qty);
+      });
+    }
+
+    order.status = status;
+
+    if (status === "Delivered") {
+      order.deliveredAt = Date.now();
+      order.paymentInfo.status = "Succeeded";
+      const serviceCharge = order.totalPrice * .10;
+      await updateSellerInfo(order.totalPrice - serviceCharge);
+    }
+
+    await order.save({ validateBeforeSave: false });
+
+    res.status(200).json(order);
+
+    async function updateOrder(id, qty) {
+      const product = await Product.findById(id);
+      product.stock -= qty;
+      product.sold_out += qty;
+      await product.save({ validateBeforeSave: false });
+    }
+
+    async function updateSellerInfo(amount) {
+      const vendor = await Shop.findById(req.seller.id);
+      vendor.availableBalance = amount;
+      await vendor.save();
+    }
   } catch (error) {
     throw new Error(error);
   }
 });
 
-
-//CREATE ORDER
-const createAnOrder = asyncHandler(async (req, res) => {
-  const { cashOnDel, couponApplied } = req.body;
-  const { id } = req.user;
-  validateMongoDbId(id);
+//User get order by Id
+const getOrderId = asyncHandler(async (req, res) => {
+  const userId = req.user._id;
+  validateMongoDbId(userId);
   try {
-    if (!cashOnDel) throw new Error("Creating Cash on Delivery Failed");
-    const user = await User.findById(id);
-    const userCart = await Cart.findOne({ orderby: user.id });
-    let finalAmount = 0;
-    if (couponApplied && userCart.totalAfterDiscount) {
-      finalAmount = userCart.totalAfterDiscount;
-    }
-    else {
-      finalAmount = userCart.cartTotal;
-    }
-    let newOrder = await new Order({
-      products: userCart.products,
-      paymentIntent: {
-        id: uniqid(),
-        method: "cashOnDel",
-        amount: finalAmount,
-        status: "Cash On Delivery",
-        created: Date.now(),
-        currency: "GHC",
-      },
-      orderby: user.id,
-      orderStatus: "Processing",
-    }).save();
-    let update = userCart.products.map((item) => {
-      return {
-        updateOne: {
-          filter: { id: item.product.id },
-          update: { $inc: { quantity: -item.count, sold: + item.count } },
-        },
-      };
+    const userOrder = await Order.findOne({ "user._id": userId }).populate("products.product").exec();
+    res.status(200).json(userOrder);
+  } catch (error) {
+    throw new Error(error);
+  }
+});
+
+// Get all orders of a user
+const userGetAllOrders = asyncHandler(async (req, res) => {
+  const userId = req.user._id;
+  validateMongoDbId(userId);
+  try {
+    const orders = await Order.find({ "user._id": userId }).sort({ createdAt: -1, });
+    res.json(orders);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+//Vendor get order by Id
+const vendorGetOrderId = asyncHandler(async (req, res) => {
+  const vendorId = req.vendor._id;
+  validateMongoDbId(vendorId);
+  try {
+    const vendorOrder = await Order.findOne({ "products.vendor": vendorId }).populate("products.product").exec();
+    res.status(200).json(vendorOrder);
+  } catch (error) {
+    throw new Error(error);
+  }
+});
+
+// Vendor get orders
+const vendorGetAllOrders = asyncHandler(async (req, res) => {
+  const vendorId = req.vendor._id;
+  validateMongoDbId(vendorId);
+  try {
+    const orders = await Order.find({ "products.vendor": vendorId }).sort({ createdAt: -1, });
+    res.json(orders);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+//User get order by Id
+const refundRequest = asyncHandler(async (req, res) => {
+  const orderId = req.params.id;
+  validateMongoDbId(orderId);
+  try {
+    const order = await Order.findById(orderId);
+    if (!order) throw new Error("Order not found");
+
+    order.status = req.body.status;
+    await order.save({ validateBeforeSave: false });
+
+    res.status(200).json({
+      order,
+      message: "Order Refund Request successfully!",
     });
-    const updated = Product.bulkWrite(update, {});
-    res.json({ message: "success" });
   } catch (error) {
     throw new Error(error);
   }
 });
 
-//User get orders
-const getOrders = asyncHandler(async (req, res) => {
-  const { id } = req.user;
-  validateMongoDbId(id);
+//Vendor accept the refund
+const acceptRefundRequest = asyncHandler(async (req, res) => {
+  const orderId = req.params.id;
+  const { status } = req.body;
+  validateMongoDbId(orderId);
   try {
-    const userOrders = await Order.findOne({ orderby: id }).populate("products.product").exec();
-    res.json(userOrders);
+    const order = await Order.findById(orderId);
+
+    if (!order) throw new Error("Order not found")
+
+    order.status = status;
+
+    await order.save();
+
+    res.status(200).json("Order Refund successfull!");
+
+    //look into this
+    if (status === "Refund Success") {
+      order.products.forEach(async (o) => {
+        await updateOrder(o._id, o.qty);
+      });
+    }
+
+    async function updateOrder(id, qty) {
+      const product = await Product.findById(id);
+
+      product.quantity += qty;
+      product.sold -= qty;
+
+      await product.save({ validateBeforeSave: false });
+    }
   } catch (error) {
     throw new Error(error);
   }
 });
-
 
 module.exports = {
-
-  getOrderById,
-  createOrder,
-  updateOrderById,
-  deleteOrderById
+  createAnOrder,
+  vendorGetOrderId,
+  updateOrderStatus,
+  getOrderId,
+  userGetAllOrders,
+  vendorGetAllOrders,
+  acceptRefundRequest,
+  refundRequest,
 };

@@ -23,22 +23,25 @@ const OrderSchema = new mongoose.Schema({
     type: Number,
     required: true
   },
-  paymentInfo:{
-    id:{
-        type: String,
+  paymentInfo: {
+    id: {
+      type: String,
     },
     status: {
-        type: String,
+      type: String,
     },
-    type:{
-        type: String,
+    type: {
+      type: String,
     },
-},
-  shippingAddress: {
+    created: {
+      type: Date,
+    }
+  },
+  deliveryAddress: {
     type: Object,
     required: true
   },
-  status: {
+  orderStatus: {
     type: String,
     default: 'Processing'
   },
