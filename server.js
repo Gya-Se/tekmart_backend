@@ -15,7 +15,7 @@ const orderRouter = require("./route/order.routes");
 
 const cookieParser = require("cookie-parser");
 const bodyParser = require("body-parser");
-// const PORT = process.env.PORT || 3000; 
+const PORT = process.env.PORT || 3000; 
 const express = require("express");
 const morgan = require("morgan");
 const cors = require("cors");
@@ -49,7 +49,7 @@ dbConnect();
 //Creating a portal  to listen from
 app.get('/', (req, res) => res.json("Server works!"))
 
-// //Creating a portal  to listen from
-//   app.listen(PORT, () => {
-//   console.log(`Server started on port http://localhost:${PORT}`);
-//   })
+//Creating a portal  to listen from
+  app.listen(PORT, () => {
+  console.log(`Server started on port http://localhost:${PORT}`);
+  })
