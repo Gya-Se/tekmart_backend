@@ -6,9 +6,14 @@ const {
     updateProduct,
     deleteProduct,
     productSearch,
-    getAllProducts,
     getVendorProducts,
-    userGetVendorProducts, } = require("../controller/product.controller");
+    userGetVendorProducts,
+    productQuery,
+    getNewArrivals,
+    getTopDeals,
+    getTopVendors,
+    getTopBrands,
+    getTopCats, } = require("../controller/product.controller");
 const { review } = require("../controller/review.controller");
 const { authenticateVendor, authenticateUser } = require("../middlewares/authMiddleware");
 const { upload } = require("../middlewares/multer");
@@ -18,10 +23,16 @@ const router = express.Router();
 router.post("/create-product", upload.array("images"), authenticateVendor, createProduct);
 
 //GET ROUTE
-router.get("/all-products", authenticateUser, getAllProducts);
-router.get("/get-product/:id", authenticateUser, getProduct);
-router.get("/vendor-products/:id", authenticateUser, userGetVendorProducts);
-router.get("/filter-products", authenticateUser, productSearch);
+router.get("/all-products", getNewArrivals);
+router.get("/new-arrivals", getNewArrivals);
+router.get("/top-deals", getTopDeals);
+router.get("/top-brands", getTopBrands);
+router.get("/top-categories", getTopCats);
+router.get("/top-vendors", getTopVendors);
+router.get("/get-product/:id", getProduct);
+router.get("/vendor-products/:id", userGetVendorProducts);
+router.get("/filter-products", productQuery);
+router.get("/search", productSearch);
 router.get("/vendor-products", authenticateVendor, getVendorProducts);
 
 //DELETE ROUTE
