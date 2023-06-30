@@ -5,7 +5,6 @@ const {
     createProduct,
     updateProduct,
     deleteProduct,
-    productSearch,
     getVendorProducts,
     userGetVendorProducts,
     productQuery,
@@ -32,7 +31,6 @@ router.get("/top-vendors", getTopVendors);
 router.get("/get-product/:id", getProduct);
 router.get("/vendor-products/:id", userGetVendorProducts);
 router.get("/filter-products", productQuery);
-router.get("/search", productSearch);
 router.get("/vendor-products", authenticateVendor, getVendorProducts);
 
 //DELETE ROUTE

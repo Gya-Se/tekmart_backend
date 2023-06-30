@@ -58,9 +58,9 @@ const activateVendor = asyncHandler(async (req, res) => {
         if (!newVendor) {
             throw new Error("Invalid token");
         }
-        const {shopName, email, password, phone} = newVendor
+        const { shopName, email, password, phone } = newVendor
 
-        const newVendorDetails = new Vendor({shopName, email, password, phone});
+        const newVendorDetails = new Vendor({ shopName, email, password, phone });
         await newVendorDetails.save();
         res.status(200).json(newVendorDetails)
 
@@ -138,30 +138,35 @@ const getVendor = asyncHandler(async (req, res) => {
 //Vendor login
 const vendorLogin = asyncHandler(async (req, res) => {
     const { email, password } = req.body;
-    const vendor = await Vendor.findOne({ email });
+    try {
+        const vendor = await Vendor.findOne({ email });
 
-    if (vendor.role !== "vendor") throw new Error("Not Authorised");
+        if (vendor.role !== "vendor") throw new Error("Not Authorised");
 
-    if (vendor.isBlocked === true) throw new Error("Your account is blocked. Contact our customer service for support on how to recover your account");
+        if (vendor.isBlocked === true) throw new Error("Your account is blocked. Contact our customer service for support on how to recover your account");
 
-    if (vendor && (await vendor.isPasswordMatched(password))) {
-        const refreshToken = generateRefreshToken(vendor._id);
-        await Vendor.findByIdAndUpdate(vendor._id, { refreshToken: refreshToken },
-            { new: true }
-        );
-        res.cookie("refreshToken", refreshToken, {
-            httpOnly: true,
-            maxAge: 72 * 60 * 60 * 1000,
-            secure: false,
-        });
-        res.status(200).json({
-            _id: vendor._id,
-            name: vendor.name,
-            email: vendor.email,
-            token: generateToken(vendor._id)
-        });
-    } else {
-        throw new Error("Invalid Credentials");
+        if (vendor && (await vendor.isPasswordMatched(password))) {
+            const refreshToken = generateRefreshToken(vendor._id);
+            await Vendor.findByIdAndUpdate(vendor._id, { refreshToken: refreshToken },
+                { new: true }
+            );
+            res.cookie("refreshToken", refreshToken, {
+                httpOnly: true,
+                maxAge: 72 * 60 * 60 * 1000,
+                secure: false,
+            });
+            res.status(200).json({
+                _id: vendor._id,
+                name: vendor.name,
+                email: vendor.email,
+                token: generateToken(vendor._id)
+            });
+        } else {
+            throw new Error("Invalid Credentials");
+        }
+    } catch (error) {
+        console.error(error);
+        throw new Error(error);
     }
 });
 

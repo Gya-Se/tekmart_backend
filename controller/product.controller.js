@@ -14,10 +14,7 @@ const createProduct = asyncHandler(async (req, res) => {
     const files = req.files;
     const imageUrls = files.map((file) => `${file.filename}`);
 
-    product.images = imageUrls;
-    product.vendor = vendorId;
-
-    const newProduct = new Product({ product });
+    const newProduct = new Product({ vendor: vendorId, images: imageUrls, product });
     await newProduct.save();
     res.status(200).json(newProduct);
   } catch (error) {
@@ -28,18 +25,20 @@ const createProduct = asyncHandler(async (req, res) => {
 
 // Vendor update product by ID
 const updateProduct = asyncHandler(async (req, res) => {
-  const vendorId = req.vendor._id;
-  const { productId } = req.body;
+  const vendorId = req.vendor.id;
+  const productId = req.params.id;
+  const updates = req.body;
   validateMongoDbId(vendorId);
   validateMongoDbId(productId);
   try {
-    const product = await Product.findOne({ productId });
+    const product = await Product.findOne({ _id: productId });
     const checkVendor = product.vendor.toString();
+    console.log(checkVendor)
+    console.log(vendorId)
 
     if (checkVendor !== vendorId) throw new Error("Not Authorised");
 
     if (checkVendor === vendorId) {
-      const updates = req.body;
       const updatedProduct = await Product.findByIdAndUpdate(productId, updates, { new: true });
       if (!updatedProduct) {
         return res.status(404).json({ error: 'Product not found' });
@@ -110,7 +109,7 @@ const getNewArrivals = asyncHandler(async (req, res) => {
   try {
     const products = await Product.find().sort({ createdAt: -1 });
     if (!products) {
-      return res.status(404).json({ error: 'Products not found' });
+      return res.status(404).json('Products not found');
     }
     res.status(200).json(products);
   } catch (error) {
@@ -225,8 +224,6 @@ const getTopBrands = asyncHandler(async (req, res) => {
   }
 });
 
-
-
 // User get  top vendors
 const getTopVendors = asyncHandler(async (req, res) => {
   let vendors = [];
@@ -272,30 +269,16 @@ const getTopVendors = asyncHandler(async (req, res) => {
   }
 });
 
-//Search for products
-const productSearch = asyncHandler(async (req, res) => {
-  const searchQuery = req.query.search;
-  try {
-    const products = await Product.find({
-      $text: { $search: searchQuery }
-    })
-    res.status(200).json(products);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Server error' });
-  }
-})
-
-//User get all product to filter, sort and paginate
+//Get all products
 const productQuery = asyncHandler(async (req, res) => {
   try {
     //FILTERING
     const queryObj = { ...req.query };
     const excludeFields = ["page", "sort", "limit", "fields"];
     excludeFields.forEach((element) => delete queryObj[element]);
-    console.log(queryObj);
+
     let queryStr = JSON.stringify(queryObj);
-    queryStr = queryStr.replace(/\b (gte|gt|lte|lt)\b/g, (match) => $$, { match });
+    queryStr = queryStr.replace(/\b (gte|gt|lte|lt)\b/g, (match) => `$${ match }`);
 
     let query = Product.find(JSON.parse(queryStr));
 
@@ -312,7 +295,7 @@ const productQuery = asyncHandler(async (req, res) => {
       const fields = req.query.fields.split(",").join(" ");
       query = query.select(fields);
     } else {
-      query = query.select("-__V");
+      query = query.select("-__v ");
     }
 
     //PAGINATION
@@ -382,5 +365,4 @@ module.exports = {
   getTopVendors,
   getVendorProducts,
   userGetVendorProducts,
-  productSearch,
 };

@@ -15,7 +15,7 @@ const orderRouter = require("./route/order.routes");
 
 const cookieParser = require("cookie-parser");
 const bodyParser = require("body-parser");
-const PORT = process.env.PORT || 3000; 
+const PORT = process.env.PORT || 3000;
 const express = require("express");
 const morgan = require("morgan");
 const cors = require("cors");
@@ -29,14 +29,14 @@ app.use(cookieParser());
 app.use(cors());
 
 //Api connections
-app.use("/v1/api/user", userRouter);
-app.use("/v1/api/vendor", vendorRouter);
-app.use("/v1/api/admin", adminRouter);
-app.use("/v1/api/product", productRouter);
-app.use("/v1/api/transaction", transactionRouter);
-app.use("/v1/api/withdraw", withdrawRouter);
-app.use("/v1/api/order", orderRouter);
-app.use("/v1/api/cart", cartRouter);
+app.use("/api/v1/user", userRouter);
+app.use("/api/v1/vendor", vendorRouter);
+app.use("/api/v1/admin", adminRouter);
+app.use("/api/v1/product", productRouter);
+app.use("/api/v1/transaction", transactionRouter);
+app.use("/api/v1/withdraw", withdrawRouter);
+app.use("/api/v1/order", orderRouter);
+app.use("/api/v1/cart", cartRouter);
 
 //Error handlers
 app.use(notFound);
@@ -47,9 +47,11 @@ dbConnect();
 
 
 //Creating a portal  to listen from
-app.get('/', (req, res) => res.json("Server works!"))
+app.get('/', (req, res) => {
+  res.send({message: "Server works!"})
+})
 
 //Creating a portal  to listen from
-  app.listen(PORT, () => {
+app.listen(PORT, () => {
   console.log(`Server started on port http://localhost:${PORT}`);
-  })
+})
