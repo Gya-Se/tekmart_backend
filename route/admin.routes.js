@@ -33,7 +33,7 @@ router.get("/get-product/:id", authenticateUser, isAdmin, getProduct);
 router.get("/get-all-products", authenticateUser, isAdmin, getAllProducts);
 router.get("/get-all-withdrawals", authenticateUser, isAdmin, allWithdrawals);
 router.get("/get-order/:id", authenticateUser, isAdmin, getOrderById);
-router.get("/get-all-orders:", authenticateUser, isAdmin, getAllOrders);
+router.get("/get-all-orders", authenticateUser, isAdmin, getAllOrders);
 router.get("/get-all-orders-user/:id", authenticateUser, isAdmin, getAllOrdersOfUser);
 router.get("/get-all-orders-vendor/:id", authenticateUser, isAdmin, getAllOrdersOfVendor);
 

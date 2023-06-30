@@ -32,7 +32,7 @@ const createVendor = asyncHandler(async (req, res) => {
         };
 
         const activationToken = createActivationToken(vendor);
-        const activationUrl = `<a href="http://localhost:5000/v1/api/vendor/activation/${activationToken}"> Reset Password </a>`;
+        const activationUrl = `<a href="https://tekmart.cyclic.app/api/v1/vendor/activation/${activationToken}"> Reset Password </a>`;
         try {
             sendEmail({
                 email: vendor.email,
@@ -237,7 +237,7 @@ const forgotPasswordToken = asyncHandler(async (req, res) => {
         const token = await vendor.createPasswordResetToken();
         await vendor.save();
 
-        const activationUrl = `<a href= http://localhost:5000/v1/api/vendor/reset-password/${token}> Reset Password </a>`;
+        const activationUrl = `<a href= https://tekmart.cyclic.app/api/v1/vendor/reset-password/${token}> Reset Password </a>`;
         try {
             sendEmail({
                 email: vendor.email,

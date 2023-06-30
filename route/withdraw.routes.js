@@ -12,8 +12,8 @@ const router = express.Router();
 router.post("/request", authenticateVendor, createWithdrawal);
 
 //Get route
-router.get("/:id", authenticateVendor, getaWithdrawal);
-router.get("/", authenticateVendor, getAllWithdrawals);
+router.get("/get-withdrawal/:id", authenticateVendor, getaWithdrawal);
+router.get("/all-withdrawals", authenticateVendor, getAllWithdrawals);
 
 //Put route
 router.put("/update-payment-method", authenticateVendor, updatePaymentMethod);

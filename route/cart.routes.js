@@ -12,7 +12,7 @@ const router = express.Router();
 router.post("/add-to-cart/:id", authenticateUser, addToCart);
 
 //Get route
-router.get("/", authenticateUser, getUserCart);
+router.get("/user-cart", authenticateUser, getUserCart);
 
 //Put route
 router.put("/update-prod-qty/:id", authenticateUser, updateCartProductQuantity);

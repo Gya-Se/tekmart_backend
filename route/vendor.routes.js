@@ -29,14 +29,15 @@ router.get("/refresh", handleRefreshToken);
 router.get("/get-vendor", authenticateVendor, getVendor); 
 router.get("/logout", logout); 
 
-//DELETE ROUTE
-router.delete("/delete-vendor", authenticateVendor, deleteVendor); 
-
 //PUT ROUTE
 router.put("/reset-password/:token", authenticateVendor, resetPassword);
 router.put("/update-password", authenticateVendor, updatePassword);
 router.put("/update-avatar", authenticateVendor,   upload.single("image"), updateAvatar);
 router.put("/update-vendor", authenticateVendor, updateVendor); 
+
+//DELETE ROUTE
+router.delete("/delete-vendor", authenticateVendor, deleteVendor); 
+
 
 //EXPORT ROUTE
 module.exports = router;

@@ -30,16 +30,17 @@ router.get("/refresh", handleRefreshToken);
 router.get("/logout", logout); 
 router.get("/get-user", authenticateUser, getUser);
 
-//DELETE ROUTE
-router.delete("/delete-user", authenticateUser, deleteUser); 
-
 //PUT ROUTE
 router.put("/update-user", authenticateUser, updateUser); 
 router.put("/update-address", authenticateUser, updateAddress);
-router.put("/delete-address", authenticateUser, deleteAddress);
+router.put("/remove-address", authenticateUser, deleteAddress);
 router.put("/update-avatar", authenticateUser,   upload.single("image"), updateAvatar);
 router.put("/update-password", authenticateUser, updatePassword);
 router.put("/reset-password/:token", authenticateUser, resetPassword);
+
+//DELETE ROUTE
+router.delete("/delete-user", authenticateUser, deleteUser); 
+
 
 //EXPORT ROUTE
 module.exports = router;

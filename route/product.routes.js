@@ -22,7 +22,6 @@ const router = express.Router();
 router.post("/create-product", upload.array("images"), authenticateVendor, createProduct);
 
 //GET ROUTE
-router.get("/all-products", getNewArrivals);
 router.get("/new-arrivals", getNewArrivals);
 router.get("/top-deals", getTopDeals);
 router.get("/top-brands", getTopBrands);
@@ -33,12 +32,12 @@ router.get("/vendor-products/:id", userGetVendorProducts);
 router.get("/filter-products", productQuery);
 router.get("/vendor-products", authenticateVendor, getVendorProducts);
 
-//DELETE ROUTE
-router.delete("/delete-product/:id", authenticateVendor, deleteProduct);
-
 //PUT ROUTE
 router.put("/update-product/:id", authenticateVendor, updateProduct);
 router.put("/review-product/:id", authenticateUser, review);
+
+//DELETE ROUTE
+router.delete("/delete-product/:id", authenticateVendor, deleteProduct);
 
 
 //EXPORT ROUTE

@@ -7,7 +7,7 @@ const {
     userGetAllOrders,
     vendorGetAllOrders,
     acceptRefundRequest,
-    refundRequest,} = require("../controller/order.controller");
+    refundRequest, } = require("../controller/order.controller");
 const { authenticateUser, authenticateVendor } = require("../middlewares/authMiddleware");
 const router = express.Router();
 
@@ -18,7 +18,7 @@ router.post("/create-order", authenticateUser, createAnOrder);
 router.get("/user-order/:id", authenticateUser, getOrderId);
 router.get("/user-orders", authenticateUser, userGetAllOrders);
 router.get("/vendor-order/:id", authenticateVendor, vendorGetOrderId);
-router.get("/user-orders", authenticateVendor, vendorGetAllOrders);
+router.get("/vendor-orders", authenticateVendor, vendorGetAllOrders);
 
 //Put route
 router.put("/refund-request/:id", authenticateUser, refundRequest);

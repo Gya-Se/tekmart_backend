@@ -10,8 +10,8 @@ const router = express.Router();
 // router.post("/add-to-cart/:id", authenticateUser, addToCart);
 
 //Get route
-router.get("/", authenticateUser, getUserTransactions);
-router.get("/:id", authenticateUser, getUserTransactionById);
+router.get("/transact", authenticateUser, getUserTransactions);
+router.get("/transact/:id", authenticateUser, getUserTransactionById);
 
 //Put route
 

@@ -32,7 +32,7 @@ const createUser = asyncHandler(async (req, res) => {
     };
 
     const activationToken = createActivationToken(user);
-    const activationUrl = `<a https://tekmart-backend.vercel.app/v1/api/user/activation/${activationToken}">Activate Account</a>`;
+    const activationUrl = `<a https://tekmart.cyclic.app/api/v1/user/activation/${activationToken}">Activate Account</a>`;
     try {
       sendEmail({
         email: user.email,
@@ -298,7 +298,7 @@ const forgotPasswordToken = asyncHandler(async (req, res) => {
     const token = await user.createPasswordResetToken();
     await user.save();
 
-    const activationUrl = `<a href= http://localhost:5000/v1/api/user/reset-password/${token}> Reset Password </a>`;
+    const activationUrl = `<a href= https://tekmart.cyclic.app/api/v1/user/reset-password/${token}> Reset Password </a>`;
     try {
       sendEmail({
         email: user.email,
