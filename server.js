@@ -1,6 +1,12 @@
 const { notFound, errorHandler } = require("./middlewares/customErrorHandler");
 const dbConnect = require("./config/dbConnection");
-const dotenv = require("dotenv").config();
+
+// config
+if (process.env.NODE_ENV !== "PRODUCTION") {
+  require("dotenv").config({
+    path: "./.env",
+  });
+}
 
 //Exporting routes
 const vendorRouter = require("./route/vendor.routes");
