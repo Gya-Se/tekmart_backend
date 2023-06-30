@@ -1,7 +1,6 @@
 const { notFound, errorHandler } = require("./middlewares/customErrorHandler");
 const dbConnect = require("./config/dbConnection");
-const dotenv = require("dotenv");
-dotenv.config();
+const dotenv = require("dotenv").config();
 
 //Exporting routes
 const vendorRouter = require("./route/vendor.routes");
