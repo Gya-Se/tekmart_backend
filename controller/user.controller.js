@@ -32,14 +32,14 @@ const createUser = asyncHandler(async (req, res) => {
     };
 
     const activationToken = createActivationToken(user);
-    const activationUrl = `<a https://tekmart.cyclic.app/api/v1/user/activation/${activationToken}">Activate Account</a>`;
+    const activationUrl = `<a href="https://tekmart.cyclic.app/api/v1/user/activation/${activationToken}">Activate Account</a>`;
     try {
       sendEmail({
         email: user.email,
         subject: "Activate your account",
         htm: `Hello ${user.firstname}, please click on the link to activate your account. ${activationUrl}`,
       });
-      res.status(201).json(`Please check your email:- ${user.email} to activate your account`);
+      res.status(201).json(`Please check your email: ${user.email} to activate your account`);
     } catch (error) {
       throw new Error(error);
     }
