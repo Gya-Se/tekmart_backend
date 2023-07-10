@@ -11,7 +11,6 @@ const {
     logout,
     deleteVendor,
     updateAvatar,
-    activateVendor,
     getVendor, } = require("../controller/vendor.controller");
 const { authenticateVendor } = require("../middlewares/authMiddleware");
 const { upload } = require("../middlewares/multer");
@@ -20,7 +19,6 @@ const router = express.Router();
 //POST ROUTE
 router.post("/register", createVendor);
 router.post("/forgot-password-token", forgotPasswordToken);
-router.post("/activation/:token", activateVendor);
 router.post("/login", vendorLogin);
 
 

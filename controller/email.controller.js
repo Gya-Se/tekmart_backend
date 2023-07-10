@@ -24,7 +24,7 @@ const sendEmail = asyncHandler(async (data, req, res) => {
       console.log("Message sent: %s", info.messageId);
       console.log("Preview URL: %s", nodemailer.getTestMessageUrl(info));
    } catch (error) {
-    console.log(error, "email not sent"); } 
+    console.log(error, "Email not sent"); } 
 });
 
  module.exports = sendEmail;

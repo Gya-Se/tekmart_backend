@@ -13,15 +13,13 @@ const {
     updateAddress,
     updateAvatar,
     getUser,
-    deleteAddress,
-    activateUser,} = require("../controller/user.controller");
+    deleteAddress,} = require("../controller/user.controller");
 const { authenticateUser } = require("../middlewares/authMiddleware");
 const { upload } = require("../middlewares/multer");
 const router = express.Router();
 
 //POST ROUTE
 router.post("/register", createUser);
-router.post("/activation/:token", activateUser);
 router.post("/login", userLogin);
 router.post("/forgot-password-token", forgotPasswordToken);
 

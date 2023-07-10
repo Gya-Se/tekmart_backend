@@ -24,46 +24,9 @@ const createUser = asyncHandler(async (req, res) => {
       return res.status(400).json({ error: "An account with this email already exists" });
     }
 
-    const user = {
-      firstname,
-      lastname,
-      email,
-      password
-    };
-
-    const activationToken = createActivationToken(user);
-    const activationUrl = `<a href="https://tekmart.cyclic.app/api/v1/user/activation/${activationToken}">Activate Account</a>`;
-    try {
-      sendEmail({
-        email: user.email,
-        subject: "Activate your account",
-        htm: `Hello ${user.firstname}, please click on the link to activate your account. ${activationUrl}`,
-      });
-      res.status(201).json(`Please check your email: ${user.email} to activate your account`);
-    } catch (error) {
-      throw new Error(error);
-    }
-  } catch (error) {
-    console.error(error);
-    throw new Error(error);
-  }
-});
-
-//Activate user
-const activateUser = asyncHandler(async (req, res) => {
-  try {
-    const { token } = req.params;
-    const newUser = jwt.verify(token, process.env.JWT_SECRET);
-
-    if (!newUser) {
-      throw new Error("Invalid token");
-    }
-    const { firstname, lastname, email, password } = newUser;
-
     const newUserDetails = new User({ firstname, lastname, email, password });
     await newUserDetails.save();
     res.status(200).json(newUserDetails)
-
   } catch (error) {
     console.error(error);
     throw new Error(error);
@@ -344,7 +307,6 @@ module.exports = {
   updatePassword,
   updateAddress,
   updateAvatar,
-  activateUser,
   deleteAddress,
   getUser,
 };

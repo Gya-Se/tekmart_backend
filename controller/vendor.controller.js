@@ -24,50 +24,16 @@ const createVendor = asyncHandler(async (req, res) => {
             return res.status(400).json({ error: "An account with this email already exists" });
         }
 
-        const vendor = {
-            shopName,
-            email,
-            password,
-            phone
-        };
+        const newVendorDetails = new Vendor({ shopName, email, password, phone });
+        await newVendorDetails.save();
+        res.status(200).json(newVendorDetails)
 
-        const activationToken = createActivationToken(vendor);
-        const activationUrl = `<a href="https://tekmart.cyclic.app/api/v1/vendor/activation/${activationToken}"> Reset Password </a>`;
-        try {
-            sendEmail({
-                email: vendor.email,
-                subject: "Activate your shop",
-                htm: `Hello ${vendor.shopName}, please click on the link to activate your shop.${activationUrl}`,
-            });
-            res.status(201).json(`Please check your email:- ${vendor.email} to activate your shop.`);
-        } catch (error) {
-            throw new Error(error);
-        }
     } catch (error) {
         console.error(error);
         throw new Error(error);
     }
 });
 
-//Activate vendor
-const activateVendor = asyncHandler(async (req, res) => {
-    try {
-        const { token } = req.params;
-        const newVendor = jwt.verify(token, process.env.JWT_SECRET);
-
-        if (!newVendor) {
-            throw new Error("Invalid token");
-        }
-        const { shopName, email, password, phone } = newVendor
-
-        const newVendorDetails = new Vendor({ shopName, email, password, phone });
-        await newVendorDetails.save();
-        res.status(200).json(newVendorDetails)
-
-    } catch (error) {
-        throw new Error(error);
-    }
-});
 
 // Update vendor avatar
 const updateAvatar = asyncHandler(async (req, res) => {
@@ -275,7 +241,6 @@ const resetPassword = asyncHandler(async (req, res) => {
 module.exports = {
     createVendor,
     forgotPasswordToken,
-    activateVendor,
     vendorLogin,
     handleRefreshToken,
     getVendor,
