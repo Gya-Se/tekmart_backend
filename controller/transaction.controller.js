@@ -24,9 +24,13 @@ const getUserTransactions = asyncHandler(async (req, res) => {
   validateMongoDbId(userId);
   try {
     const transactions = await Transaction.find({ user: userId });
-    res.json(transactions);
+
+    res.status(200).json({
+      success: true,
+      transaction
+    });
   } catch (error) {
-    throw new Error(error);
+    res.status(400).send(error);
   }
 });
 
@@ -40,14 +44,18 @@ const getUserTransactionById = asyncHandler(async (req, res) => {
     const transact = await Transaction.findOne({ transactId });
     const getUser = transact.user.toString();
 
-    if (getUser !== userId) throw new Error("Not Authorised");
+    if (getUser !== userId) res.status(400).send("Not Authorised");
 
     if (getUser === userId) {
       const transaction = await Transaction.findById({ transactId });
-      res.json(transaction);
+
+      res.status(200).json({
+        success: true,
+        transaction
+      });
     };
   } catch (error) {
-    throw new Error(error);
+    res.status(400).send(error);
   }
 });
 

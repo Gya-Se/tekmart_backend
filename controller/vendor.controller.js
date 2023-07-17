@@ -26,11 +26,13 @@ const createVendor = asyncHandler(async (req, res) => {
 
         const newVendorDetails = new Vendor({ shopName, email, password, phone });
         await newVendorDetails.save();
-        res.status(200).json(newVendorDetails)
 
+        res.status(200).json({
+            success: true,
+            newVendorDetails
+        });
     } catch (error) {
-        console.error(error);
-        throw new Error(error);
+        res.status(400).send(error);
     }
 });
 
@@ -49,9 +51,13 @@ const updateAvatar = asyncHandler(async (req, res) => {
         if (!updatedVendor) {
             return res.status(404).json("Vendor not found");
         }
-        res.status(200).json(updatedVendor);
+
+        res.status(200).json({
+            success: true,
+            updatedVendor
+        });
     } catch (error) {
-        throw new Error(error);
+        res.status(400).send(error);
     }
 });
 
@@ -65,9 +71,13 @@ const updateVendor = asyncHandler(async (req, res) => {
         if (!updatedVendor) {
             return res.status(404).json("Vendor not found");
         }
-        res.status(200).json(updatedVendor)
+
+        res.status(200).json({
+            success: true,
+            updatedVendor
+        });
     } catch (error) {
-        throw new Error(error);
+        res.status(400).send(error);
     }
 });
 
@@ -80,9 +90,13 @@ const deleteVendor = asyncHandler(async (req, res) => {
         if (!deletedVendor) {
             return res.status(404).json("Vendor not found");
         }
-        res.status(200).json("Vendor deleted successfully");
+
+        res.status(200).json({
+            success: true,
+            message: "Vendor deleted successfully"
+        });
     } catch (error) {
-        throw new Error(error);
+        res.status(400).send(error);
     }
 });
 
@@ -95,9 +109,13 @@ const getVendor = asyncHandler(async (req, res) => {
         if (!vendor) {
             return res.status(404).json("Vendor not found");
         }
-        res.status(200).json(vendor)
+
+        res.status(200).json({
+            success: true,
+            vendor
+        });
     } catch (error) {
-        throw new Error(error);
+        res.status(400).send(error);
     }
 });
 
@@ -106,53 +124,59 @@ const vendorLogin = asyncHandler(async (req, res) => {
     const { email, password } = req.body;
     const vendor = await Vendor.findOne({ email });
 
-    if (vendor.role !== "vendor") throw new Error("Not Authorised");
+    if (vendor.role !== "vendor") res.status(400).send("Not Authorised");
 
-    if (vendor.isBlocked === true) throw new Error("Your account is blocked. Contact our customer service for support on how to recover your account");
+    if (vendor.isBlocked === true) res.status(400).send("Your account is blocked. Contact our customer service for support on how to recover your account");
 
     if (vendor && (await vendor.isPasswordMatched(password))) {
-        const refreshToken = generateRefreshToken(vendor._id);
-        await Vendor.findByIdAndUpdate(vendor._id, { refreshToken: refreshToken },
+        const token = generateRefreshToken(vendor._id);
+        await Vendor.findByIdAndUpdate(vendor._id, { token: token },
             { new: true }
         );
-        res.cookie("refreshToken", refreshToken, {
+        res.cookie("token", token, {
             httpOnly: true,
             maxAge: 72 * 60 * 60 * 1000,
             secure: false,
         });
+
         res.status(200).json({
+            success: true,
             _id: vendor._id,
             name: vendor.name,
             email: vendor.email,
             token: generateToken(vendor._id)
         });
     } else {
-        throw new Error("Invalid Credentials");
+        res.status(400).send("Invalid Credentials");
     }
 });
 
 //Handle refresh token
 const handleRefreshToken = asyncHandler(async (req, res) => {
     const cookie = req.cookies;
-    if (!cookie?.refreshToken) throw new Error("No refresh token in cookies");
-    const refreshToken = cookie.refreshToken;
-    const vendor = await Vendor.findOne({ refreshToken });
-    if (!vendor) throw new Error("No refresh token present or matched");
+    if (!cookie?.token) res.status(400).send("No token in cookies");
+    const token = cookie.token;
+    const vendor = await Vendor.findOne({ token });
+    if (!vendor) res.status(400).send("No token present or matched");
     jwt.verify(refreshToken, process.env.JWT_SECRET, (err, decoded) => {
         if (err || vendor._id !== decoded.id) {
-            throw new Error("There is something wrong with refresh token");
+            res.status(400).send("There is something wrong with token");
         }
         const accessToken = generateToken(vendor._id);
-        res.json({ accessToken });
+
+        res.status(200).json({
+            success: true,
+            accessToken
+        });
     });
 });
 
 //Handle logout
 const logout = asyncHandler(async (req, res) => {
     const cookie = req.cookies;
-    if (!cookie.refreshToken) throw new Error("No Refresh Token in Cookies");
-    const refreshToken = cookie.refreshToken;
-    const vendor = await Vendor.findOne({ refreshToken });
+    if (!cookie.token) res.status(400).send("No token in cookies");
+    const token = cookie.token;
+    const vendor = await Vendor.findOne({ token });
     if (!vendor) {
         res.clearCookie("refreshToken", {
             httpOnly: true,
@@ -160,14 +184,18 @@ const logout = asyncHandler(async (req, res) => {
         });
         return res.sendStatus(403); //FORBIDDEN
     };
-    await Vendor.findOneAndUpdate(refreshToken, {
-        refreshToken: "",
+    await Vendor.findOneAndUpdate(token, {
+        token: "",
     });
-    res.clearCookie("refreshToken", {
+    res.clearCookie("token", {
         httpOnly: true,
         secure: true,
     });
-    res.status(201).json("Log out successful!");
+
+    res.status(200).json({
+        success: true,
+        message: "Log out successful!"
+    });
     res.sendStatus(403); //FORBIDDEN
 });
 
@@ -181,16 +209,20 @@ const updatePassword = asyncHandler(async (req, res) => {
 
         const checkPassword = await vendor.isPasswordMatched(oldPassword);
 
-        if (!checkPassword) throw new Error("Old password is incorrect!");
+        if (!checkPassword) res.status(400).send("Old password is incorrect!");
         if (newPassword !== confirmPassword) {
-            throw new Error("Password doesn't matched with each other!")
+            res.status(400).send("Password doesn't matched with each other!")
         }
 
         vendor.password = newPassword;
         await vendor.save();
-        res.json("Password updated successfully!");
+
+        res.status(200).json({
+            success: true,
+            message: "Password updated successfully!"
+        });
     } catch (error) {
-        throw new Error(error);
+        res.status(400).send(error);
     }
 });
 
@@ -199,7 +231,7 @@ const forgotPasswordToken = asyncHandler(async (req, res) => {
     const { email } = req.body;
     try {
         const vendor = await Vendor.findOne({ email });
-        if (!vendor) throw new Error("Vendor not found with this email address");
+        if (!vendor) res.status(400).send("Vendor not found with this email address");
         const token = await vendor.createPasswordResetToken();
         await vendor.save();
 
@@ -210,12 +242,16 @@ const forgotPasswordToken = asyncHandler(async (req, res) => {
                 subject: "Reset your password",
                 message: `Hello ${vendor.shopName}, please click on the link to reset your password. This link is valid for 10 minutes from now. ${activationUrl}`,
             });
-            res.status(200).json(`Please check your email:- ${vendor.email} to reset your password!`);
+
+            res.status(200).json({
+                success: true,
+                message: `Please check your email:- ${vendor.email} to reset your password!`
+            });
         } catch (error) {
-            throw new Error(error);
+            res.status(400).send(error);
         }
     } catch (error) {
-        throw new Error(error);
+        res.status(400).send(error);
     }
 });
 
@@ -230,12 +266,16 @@ const resetPassword = asyncHandler(async (req, res) => {
         passwordResetToken: hashedToken,
         passwordResetExpires: { $gt: Date.now() },
     });
-    if (!vendor) throw new Error("Token Expired, Please try again later");
+    if (!vendor) res.status(400).send("Token expired, please try again later");
     vendor.password = password;
     vendor.passwordResetToken = undefined;
     vendor.passwordResetExpires = undefined;
     await vendor.save();
-    res.json(vendor);
+
+    res.status(200).json({
+        success: true,
+        vendor
+    });
 });
 
 module.exports = {

@@ -18,21 +18,27 @@ const getUser = asyncHandler(async (req, res) => {
     if (!user) {
       return res.status(404).json('User not found');
     }
-    res.json(user);
+
+    res.status(200).json({
+      success: true,
+      user,
+    });
   } catch (error) {
-    console.error(error);
-    res.status(500).json('Server error');
+    res.status(400).send(error);
   }
 });
 
 //Get all users
 const getAllUsers = asyncHandler(async (req, res) => {
   try {
-    const user = await User.find().sort({ createdAt: -1 });
-    res.json(user);
+    const users = await User.find().sort({ createdAt: -1 });
+
+    res.status(200).json({
+      success: true,
+      users,
+    });
   } catch (error) {
-    console.error(error);
-    res.status(500).json('Server error');
+    res.status(400).send(error);
   }
 });
 
@@ -74,11 +80,13 @@ const blockAndUnblockUser = asyncHandler(async (req, res) => {
         throw new Error(error);
       }
 
-      res.json('User blocked successfully');
+      res.status(200).json({
+        message: "User blocked successfully",
+        success: true,
+      });
     }
   } catch (error) {
-    console.error(error);
-    res.status(500).json('Server error');
+    res.status(400).send(error);
   }
 });
 
@@ -91,10 +99,13 @@ const deleteUser = asyncHandler(async (req, res) => {
     if (!deletedUser) {
       return res.status(404).json('User not found');
     }
-    res.json({ message: 'User deleted successfully' });
+    res.status(200).json({
+      message: "User deleted successfully",
+      success: true,
+    });
+
   } catch (error) {
-    console.error(error);
-    res.status(500).json('Server error');
+    res.status(400).send(error);
   }
 });
 
@@ -110,21 +121,26 @@ const getVendor = asyncHandler(async (req, res) => {
     if (!vendor) {
       return res.status(404).json('Vendor not found');
     }
-    res.json(vendor);
+    res.status(200).json({
+      success: true,
+      vendor,
+    });
   } catch (error) {
-    console.error(error);
-    res.status(500).json('Server error');
+    res.status(400).send(error);
   }
 });
 
 //Get all vendors
 const getAllVendors = asyncHandler(async (req, res) => {
   try {
-    const vendor = await Vendor.find().sort({ createdAt: -1 });
-    res.json(vendor);
+    const vendors = await Vendor.find().sort({ createdAt: -1 });
+
+    res.status(200).json({
+      success: true,
+      vendors,
+    });
   } catch (error) {
-    console.error(error);
-    res.status(500).json('Server error');
+    res.status(400).send(error);
   }
 });
 
@@ -168,12 +184,14 @@ const blockAndUnblockVendor = asyncHandler(async (req, res) => {
         throw new Error(error);
       }
 
-      res.json('Vendor blocked successfully');
+      res.status(200).json({
+        message: "Vendor blocked successfully",
+        success: true,
+      });
     }
 
   } catch (error) {
-    console.error(error);
-    res.status(500).json('Server error');
+    res.status(400).send(error);
   }
 });
 
@@ -186,10 +204,12 @@ const deleteVendor = asyncHandler(async (req, res) => {
     if (!deletedVendor) {
       return res.status(404).json('User not found');
     }
-    res.json({ message: 'User deleted successfully' });
+    res.status(200).json({
+      message: "Vendor deleted successfully",
+      success: true,
+    });
   } catch (error) {
-    console.error(error);
-    res.status(500).json('Server error');
+    res.status(400).send(error);
   }
 });
 
@@ -205,21 +225,26 @@ const getProduct = asyncHandler(async (req, res) => {
     if (!product) {
       return res.status(404).json('Product not found');
     }
-    res.json(product);
+    res.status(200).json({
+      success: true,
+      product,
+    });
   } catch (error) {
-    console.error(error);
-    res.status(500).json('Server error');
+    res.status(400).send(error);
   }
 });
 
 //Get all products
 const getAllProducts = asyncHandler(async (req, res) => {
   try {
-    const product = await Product.find().sort({ createdAt: -1 });
-    res.json(product);
+    const products = await Product.find().sort({ createdAt: -1 });
+
+    res.status(200).json({
+      success: true,
+      products,
+    });
   } catch (error) {
-    console.error(error);
-    res.status(500).json('Server error');
+    res.status(400).send(error);
   }
 });
 
@@ -232,10 +257,12 @@ const deleteProduct = asyncHandler(async (req, res) => {
     if (!deletedVendor) {
       return res.status(404).json('Product not found');
     }
-    res.json('User deleted successfully');
+    res.status(200).json({
+      message: "Product deleted successfully",
+      success: true,
+    });
   } catch (error) {
-    console.error(error);
-    res.status(500).json('Server error');
+    res.status(400).send(error);
   }
 });
 
@@ -249,10 +276,13 @@ const allWithdrawals = asyncHandler(async (req, res) => {
     if (!withdraws) {
       return res.status(404).json('No withdrawals yet');
     }
-    res.status(201).json(withdraws);
+
+    res.status(200).json({
+      success: true,
+      withdraws
+    });
   } catch (error) {
-    console.error(error);
-    res.status(500).json('Server error');
+    res.status(400).send(error);
   }
 });
 
@@ -285,10 +315,13 @@ const vendorWithdrew = asyncHandler(async (req, res) => {
     } catch (error) {
       return next(new ErrorHandler(error.message, 500));
     }
-    res.status(201).json(withdraw);
+
+    res.status(200).json({
+      success: true,
+      withdraw
+    });
   } catch (error) {
-    console.error(error);
-    res.status(500).json('Server error');
+    res.status(400).send(error);
   }
 });
 
@@ -298,16 +331,19 @@ const vendorWithdrew = asyncHandler(async (req, res) => {
 //****************  ORDER ********************************/
 
 // Get all orders
-const getAllOrders = asyncHandler (async (req, res) => {
+const getAllOrders = asyncHandler(async (req, res) => {
   try {
     const orders = await Order.find().sort({
       deliveredAt: -1,
       createdAt: -1,
     });
-    res.json(orders);
+
+    res.status(200).json({
+      success: true,
+      orders
+    });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Server error' });
+    res.status(400).send(error);
   }
 });
 
@@ -316,11 +352,14 @@ const getAllOrdersOfUser = asyncHandler(async (req, res) => {
   const userId = req.params.id;
   validateMongoDbId(userId);
   try {
-    const orders = await Order.find({"user._id": userId}).sort({createdAt: -1,});
-    res.json(orders);
+    const orders = await Order.find({ "user._id": userId }).sort({ createdAt: -1, });
+
+    res.status(200).json({
+      success: true,
+      orders
+    });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Server error' });
+    res.status(400).send(error);
   }
 });
 
@@ -329,11 +368,14 @@ const getAllOrdersOfVendor = asyncHandler(async (req, res) => {
   const vendorId = req.params.id;
   validateMongoDbId(vendorId);
   try {
-    const orders = await Order.find({"products.vendor": vendorId}).sort({createdAt: -1,});
-    res.json(orders);
+    const orders = await Order.find({ "products.vendor": vendorId }).sort({ createdAt: -1, });
+
+    res.status(200).json({
+      success: true,
+      orders
+    });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Server error' });
+    res.status(400).send(error);
   }
 });
 
@@ -347,15 +389,18 @@ const updateOrderStatus = asyncHandler(async (req, res) => {
     if (!updateStatus) {
       return res.status(404).json('Order not found');
     }
-    res.json('Order blocked successfully');
+
+    res.status(200).json({
+      message: "Order blocked successfully",
+      success: true,
+    });
   } catch (error) {
-    console.error(error);
-    res.status(500).json('Server error');
+    res.status(400).send(error);
   }
 });
 
 // Get order by ID
-const getOrderById = asyncHandler (async (req, res) => {
+const getOrderById = asyncHandler(async (req, res) => {
   const orderId = req.params.id;
   validateMongoDbId(orderId);
   try {
@@ -363,10 +408,13 @@ const getOrderById = asyncHandler (async (req, res) => {
     if (!order) {
       return res.status(404).json({ error: 'Order not found' });
     }
-    res.json(order);
+
+    res.status(200).json({
+      success: true,
+      order
+    });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Server error' });
+    res.status(400).send(error);
   }
 });
 

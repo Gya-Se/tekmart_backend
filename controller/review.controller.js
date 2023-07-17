@@ -46,10 +46,12 @@ const review = asyncHandler(async (req, res) => {
       { arrayFilters: [{ "elem._id": productId }], new: true }
     );
 
-    res.status(200).json("Reviewed succesfully!");
+    res.status(200).json({
+      success: true,
+      message: "Reviewed succesfully!",
+    });
   } catch (error) {
-    console.error(error);
-    throw new Error(error);
+    res.status(400).send(error);
   }
 })
 

@@ -31,9 +31,13 @@ const addToCart = asyncHandler(async (req, res) => {
       cart.products.push({ productId, quantity });
     }
     await cart.save();
-    res.json(cart);
+
+    res.status(200).json({
+      success: true,
+      cart
+    });
   } catch (error) {
-    throw new Error(error);
+    res.status(400).send(error);
   }
 });
 
@@ -45,42 +49,50 @@ const updateCartProductQuantity = asyncHandler(async (req, res) => {
   try {
     const cart = await Cart.findOne({ user: userId });
     if (!cart) {
-      return res.status(404).json({ error: "Cart not found" });
+      return res.status(400).send("Cart not found");
     }
     // Find the product in the cart and update its quantity
     const product = cart.products.find((product) => product.product.toString() === productId);
     if (!product) {
-      return res.status(404).json({ error: "Product not found in cart" });
+      return res.status(400).send("Product not found in cart");
     }
     product.quantity = quantity;
     await cart.save();
-    res.status(200).json(cart);
+
+    res.status(200).json({
+      success: true,
+      cart
+    });
   } catch (error) {
-    throw new Error(error);
+    res.status(400).send(error);
   }
 });
 
 // Remove product from cart
 const removeCartProduct = asyncHandler(async (req, res) => {
   const userId = req.user._id;
-  const productId  = req.params._id;
+  const productId = req.params._id;
   try {
     const cart = await Cart.findOne({ userId });
     if (!cart) {
-      return res.status(404).json({ error: "Cart not found" });
+      return res.status(400).send("Cart not found");
     }
     // Find the item in the cart and remove it
     const itemIndex = cart.items.findIndex(
       (item) => item.product.toString() === productId
     );
     if (itemIndex === -1) {
-      return res.status(404).json({ error: "Item not found in cart" });
+      return res.status(400).send("Item not found in cart" );
     }
     cart.items.splice(itemIndex, 1);
     await cart.save();
-    res.json(cart);
+
+    res.status(200).json({
+      success: true,
+      cart
+    });
   } catch (error) {
-    throw new Error(error);
+    res.status(400).send(error);
   }
 });
 
@@ -90,9 +102,13 @@ const getUserCart = asyncHandler(async (req, res) => {
   validateMongoDbId(userId);
   try {
     const cart = await Cart.findOne({ user: userId }).populate("products.product");
-    res.json(cart);
+
+    res.status(200).json({
+      success: true,
+      cart
+    });
   } catch (error) {
-    throw new Error(error);
+    res.status(400).send(error);
   }
 });
 
@@ -102,9 +118,13 @@ const emptyCart = asyncHandler(async (req, res) => {
   validateMongoDbId(userId);
   try {
     const cart = await Cart.findOneAndRemove({ user: userId });
-    res.json(cart);
+
+    res.status(200).json({
+      success: true,
+      cart
+    });
   } catch (error) {
-    throw new Error(error);
+    res.status(400).send(error);
   }
 });
 

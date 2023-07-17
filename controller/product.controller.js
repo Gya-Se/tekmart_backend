@@ -16,10 +16,14 @@ const createProduct = asyncHandler(async (req, res) => {
 
     const newProduct = new Product({ vendor: vendorId, images: imageUrls, product });
     await newProduct.save();
-    res.status(200).json(newProduct);
+
+    res.status(200).json({
+      success: true,
+      newProduct
+    });
+
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Server error' });
+    res.status(400).send(error);
   }
 });
 
@@ -36,18 +40,20 @@ const updateProduct = asyncHandler(async (req, res) => {
     console.log(checkVendor)
     console.log(vendorId)
 
-    if (checkVendor !== vendorId) throw new Error("Not Authorised");
+    if (checkVendor !== vendorId) res.status(400).send("Not Authorised");
 
     if (checkVendor === vendorId) {
       const updatedProduct = await Product.findByIdAndUpdate(productId, updates, { new: true });
       if (!updatedProduct) {
-        return res.status(404).json({ error: 'Product not found' });
+        return res.status(400).send('Product not found');
       }
-      res.status(200).json(updatedProduct);
+      res.status(200).json({
+        success: true,
+        updatedProduct
+      });
     }
   } catch (error) {
-    console.error(error);
-    throw new Error(error);
+    res.status(400).send(error);
   }
 });
 
@@ -62,7 +68,7 @@ const deleteProduct = asyncHandler(async (req, res) => {
     const product = await Product.findOne({ productId });
     const getVendor = product.vendor.toString();
 
-    if (getVendor !== vendorId) throw new Error("Not Authorised");
+    if (getVendor !== vendorId) res.status(400).send("Not Authorised");
 
     if (getVendor === vendorId) {
       product.images.forEach((imageUrl) => {
@@ -78,13 +84,16 @@ const deleteProduct = asyncHandler(async (req, res) => {
 
       const deletedProduct = await Product.findByIdAndDelete(productId);
       if (!deletedProduct) {
-        return res.status(404).json({ error: 'Product not found' });
+        return res.status(400).send('Product not found');
       }
-      res.status(200).json("Product deleted successfully");
+      res.status(200).json({
+        success: true,
+        message: "Product deleted successfully"
+      });
     }
 
   } catch (error) {
-    throw new Error(error);
+    res.status(400).send(error);
   }
 });
 
@@ -95,12 +104,15 @@ const getProduct = asyncHandler(async (req, res) => {
   try {
     const product = await Product.findById(productId);
     if (!product) {
-      return res.status(404).json({ error: 'Product not found' });
+      return res.status(400).send('Product not found');
     }
-    res.status(200).json(product);
+
+    res.status(200).json({
+      success: true,
+      product
+    });
   } catch (error) {
-    console.error(error);
-    throw new Error(error);
+    res.status(400).send(error);
   }
 });
 
@@ -111,10 +123,13 @@ const getNewArrivals = asyncHandler(async (req, res) => {
     if (!products) {
       return res.status(404).json('Products not found');
     }
-    res.status(200).json(products);
+
+    res.status(200).json({
+      success: true,
+      products
+    });
   } catch (error) {
-    console.error(error);
-    throw new Error(error);
+    res.status(400).send(error);
   }
 });
 
@@ -123,12 +138,15 @@ const getTopDeals = asyncHandler(async (req, res) => {
   try {
     const products = await Product.find().sort({ sold: -1 });
     if (!products) {
-      return res.status(404).json({ error: 'Products not found' });
+      return res.status(400).send('Products not found');
     }
-    res.status(200).json(products);
+
+    res.status(200).json({
+      success: true,
+      products
+    });
   } catch (error) {
-    console.error(error);
-    throw new Error(error);
+    res.status(400).send(error);
   }
 });
 
@@ -169,12 +187,15 @@ const getTopCats = asyncHandler(async (req, res) => {
     const sortedCategory = sortByCount(counts);
 
     if (!sortedCategory) {
-      return res.status(404).json({ error: 'Categories not found' });
+      return res.status(400).send('Categories not found');
     }
-    res.status(200).json(sortedCategory);
+
+    res.status(200).json({
+      success: true,
+      sortedCategory
+    });
   } catch (error) {
-    console.error(error);
-    throw new Error(error);
+    res.status(400).send(error);
   }
 });
 
@@ -215,12 +236,15 @@ const getTopBrands = asyncHandler(async (req, res) => {
     const sortedBrand = sortByCount(counts);
 
     if (!sortedBrand) {
-      return res.status(404).json({ error: 'Brands not found' });
+      return res.status(400).send('Brands not found');
     }
-    res.status(200).json(sortedBrand);
+
+    res.status(200).json({
+      success: true,
+      sortedBrand
+    });
   } catch (error) {
-    console.error(error);
-    throw new Error(error);
+    res.status(400).send(error);
   }
 });
 
@@ -260,12 +284,15 @@ const getTopVendors = asyncHandler(async (req, res) => {
     const sortedVendors = sortByCount(counts);
 
     if (!sortedVendors) {
-      return res.status(404).json({ error: 'Vendors not found' });
+      return res.status(400).send('Vendors not found');
     }
-    res.status(200).json(sortedVendors);
+
+    res.status(200).json({
+      success: true,
+      sortedVendors
+    });
   } catch (error) {
-    console.error(error);
-    throw new Error(error);
+    res.status(400).send(error);
   }
 });
 
@@ -278,7 +305,7 @@ const productQuery = asyncHandler(async (req, res) => {
     excludeFields.forEach((element) => delete queryObj[element]);
 
     let queryStr = JSON.stringify(queryObj);
-    queryStr = queryStr.replace(/\b (gte|gt|lte|lt)\b/g, (match) => `$${ match }`);
+    queryStr = queryStr.replace(/\b (gte|gt|lte|lt)\b/g, (match) => `$${match}`);
 
     let query = Product.find(JSON.parse(queryStr));
 
@@ -306,15 +333,18 @@ const productQuery = asyncHandler(async (req, res) => {
 
     if (req.query.page) {
       const productCount = await Product.countDocuments();
-      if (skip >= productCount) throw new Error("This page doesn't exist");
+      if (skip >= productCount) res.status(400).send("This page doesn't exist");
     }
     console.log(page, limit, skip);
 
     const products = await query;
-    res.status(200).json(products);
 
+    res.status(200).json({
+      success: true,
+      products
+    });
   } catch (error) {
-    throw new Error(error);
+    res.status(400).send(error);
   }
 });
 
@@ -325,12 +355,15 @@ const getVendorProducts = asyncHandler(async (req, res) => {
   try {
     const allProducts = await Product.find({ vendor: vendorId });
     if (!allProducts) {
-      return res.status(404).json({ error: "You don't have any products yet" });
+      return res.status(400).send("You don't have any products yet");
     }
-    res.status(200).json(allProducts);
+
+    res.status(200).json({
+      success: true,
+      allProducts
+    });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Server error' });
+    res.status(400).send(error);
   }
 });
 
@@ -341,12 +374,14 @@ const userGetVendorProducts = asyncHandler(async (req, res) => {
   try {
     const allProducts = await Product.find({ vendor: vendorId });
     if (!allProducts) {
-      return res.status(404).json({ error: "Vendor don't have any products yet" });
+      return res.status(400).send("Vendor don't have any products yet" );
     }
-    res.status(200).json(allProducts);
+    res.status(200).json({
+      success: true,
+      allProducts
+    });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Server error' });
+    res.status(400).send(error);
   }
 });
 

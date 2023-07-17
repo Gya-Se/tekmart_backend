@@ -37,9 +37,13 @@ const createAnOrder = asyncHandler(async (req, res) => {
       });
       orders.push(order);
     }
-    res.status(200).json(orders);
+
+    res.status(200).json({
+      success: true,
+      orders
+    });
   } catch (error) {
-    throw new Error(error);
+    res.status(400).send(error);
   }
 });
 
@@ -53,7 +57,7 @@ const updateOrderStatus = asyncHandler(async (req, res) => {
   try {
     const order = await Order.findById(orderId);
 
-    if (!order) throw new Error("Order not found with this id");
+    if (!order) res.status(400).send("Order not found with this id");
 
     if (status === "Handed over for delivery") {
       order.products.forEach(async (o) => {
@@ -72,7 +76,10 @@ const updateOrderStatus = asyncHandler(async (req, res) => {
 
     await order.save({ validateBeforeSave: false });
 
-    res.status(200).json(order);
+    res.status(200).json({
+      success: true,
+      order
+    });
 
     async function updateOrder(id, qty) {
       const product = await Product.findById(id);
@@ -87,7 +94,7 @@ const updateOrderStatus = asyncHandler(async (req, res) => {
       await vendor.save();
     }
   } catch (error) {
-    throw new Error(error);
+    res.status(400).send(error);
   }
 });
 
@@ -97,9 +104,13 @@ const getOrderId = asyncHandler(async (req, res) => {
   validateMongoDbId(userId);
   try {
     const userOrder = await Order.findOne({ "user._id": userId }).populate("products.product").exec();
-    res.status(200).json(userOrder);
+
+    res.status(200).json({
+      success: true,
+      userOrder
+    });
   } catch (error) {
-    throw new Error(error);
+    res.status(400).send(error);
   }
 });
 
@@ -109,10 +120,13 @@ const userGetAllOrders = asyncHandler(async (req, res) => {
   validateMongoDbId(userId);
   try {
     const orders = await Order.find({ "user._id": userId }).sort({ createdAt: -1, });
-    res.json(orders);
+
+    res.status(200).json({
+      success: true,
+      orders
+    });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Server error' });
+    res.status(400).send(error);
   }
 });
 
@@ -122,9 +136,13 @@ const vendorGetOrderId = asyncHandler(async (req, res) => {
   validateMongoDbId(vendorId);
   try {
     const vendorOrder = await Order.findOne({ "products.vendor": vendorId }).populate("products.product").exec();
-    res.status(200).json(vendorOrder);
+
+    res.status(200).json({
+      success: true,
+      vendorOrder
+    });
   } catch (error) {
-    throw new Error(error);
+    res.status(400).send(error);
   }
 });
 
@@ -134,10 +152,13 @@ const vendorGetAllOrders = asyncHandler(async (req, res) => {
   validateMongoDbId(vendorId);
   try {
     const orders = await Order.find({ "products.vendor": vendorId }).sort({ createdAt: -1, });
-    res.json(orders);
+
+    res.status(200).json({
+      success: true,
+      orders
+    });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Server error' });
+    res.status(400).send(error);
   }
 });
 
@@ -148,17 +169,18 @@ const refundRequest = asyncHandler(async (req, res) => {
   validateMongoDbId(orderId);
   try {
     const order = await Order.findById(orderId);
-    if (!order) throw new Error("Order not found");
+    if (!order) res.status(400).send("Order not found");
 
     order.status = status;
     await order.save({ validateBeforeSave: false });
 
     res.status(200).json({
+      message: "Order refund request successfully!",
+      success: true,
       order,
-      message: "Order Refund Request successfully!",
     });
   } catch (error) {
-    throw new Error(error);
+    res.status(400).send(error);
   }
 });
 
@@ -170,13 +192,16 @@ const acceptRefundRequest = asyncHandler(async (req, res) => {
   try {
     const order = await Order.findById(orderId);
 
-    if (!order) throw new Error("Order not found")
+    if (!order) res.status(400).send("Order not found")
 
     order.status = status;
 
     await order.save();
 
-    res.status(200).json("Order Refund successfull!");
+    res.status(200).json({
+      message: "Order refund successful",
+      success: true,
+    });
 
     //look into this
     if (status === "Refund Success") {
@@ -194,7 +219,7 @@ const acceptRefundRequest = asyncHandler(async (req, res) => {
       await product.save({ validateBeforeSave: false });
     }
   } catch (error) {
-    throw new Error(error);
+    res.status(400).send(error);
   }
 });
 

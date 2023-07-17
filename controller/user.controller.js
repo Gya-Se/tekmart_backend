@@ -26,10 +26,13 @@ const createUser = asyncHandler(async (req, res) => {
 
     const newUserDetails = new User({ firstname, lastname, email, password });
     await newUserDetails.save();
-    res.status(200).json(newUserDetails)
+
+    res.status(200).json({
+      success: true,
+      newUserDetails
+    });
   } catch (error) {
-    console.error(error);
-    throw new Error(error);
+    res.status(400).send(error);
   }
 });
 
@@ -48,10 +51,13 @@ const updateAvatar = asyncHandler(async (req, res) => {
     if (!updatedUser) {
       return res.status(404).json("User not found");
     }
-    res.status(200).json(updatedUser);
+
+    res.status(200).json({
+      success: true,
+      updatedUser
+    });
   } catch (error) {
-    console.error(error);
-    throw new Error(error);
+    res.status(400).send(error);
   }
 });
 
@@ -65,10 +71,13 @@ const updateUser = asyncHandler(async (req, res) => {
     if (!updatedUser) {
       return res.status(404).json("User not found");
     }
-    res.status(200).json(updatedUser);
+
+    res.status(200).json({
+      success: true,
+      updatedUser
+    });
   } catch (error) {
-    console.error(error);
-    throw new Error(error);
+    res.status(400).send(error);
   }
 });
 
@@ -102,10 +111,12 @@ const updateAddress = asyncHandler(async (req, res) => {
 
     await user.save();
 
-    res.status(200).json(user);
+    res.status(200).json({
+      success: true,
+      user
+    });
   } catch (error) {
-    console.error(error);
-    throw new Error(error);
+    res.status(400).send(error);
   }
 });
 
@@ -122,10 +133,12 @@ const deleteAddress = asyncHandler(async (req, res) => {
 
     const user = await User.findById(userId);
 
-    res.status(200).json(user);
+    res.status(200).json({
+      success: true,
+      user
+    });
   } catch (error) {
-    console.error(error);
-    throw new Error(error);
+    res.status(400).send(error);
   }
 });
 
@@ -138,10 +151,12 @@ const deleteUser = asyncHandler(async (req, res) => {
     if (!deletedUser) {
       return res.status(404).json("User not found");
     }
-    res.status(200).json("User deleted successfully");
+    res.status(200).json({
+      success: true,
+      message: "User deleted successfully"
+    });
   } catch (error) {
-    console.error(error);
-    throw new Error(error);
+    res.status(400).send(error);
   }
 });
 
@@ -154,9 +169,13 @@ const getUser = asyncHandler(async (req, res) => {
     if (!user) {
       return res.status(404).json("User not found");
     }
-    res.status(200).json(user);
+
+    res.status(200).json({
+      success: true,
+      user
+    });
   } catch (error) {
-    throw new Error(error);
+    res.status(400).send(error);
   }
 });
 
@@ -165,19 +184,20 @@ const userLogin = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
   const user = await User.findOne({ email });
 
-  if (user.isBlocked === true) throw new Error("Your account is blocked. Contact our customer service for support on how to recover your account");
+  if (user.isBlocked === true) res.status(400).send("Your account is blocked. Contact our customer service for support on how to recover your account");
 
   if (user && (await user.isPasswordMatched(password))) {
-    const refreshToken = generateRefreshToken(user._id);
-    await User.findByIdAndUpdate(user._id, { refreshToken: refreshToken, },
+    const token = generateRefreshToken(user._id);
+    await User.findByIdAndUpdate(user._id, { token: token, },
       { new: true }
     );
-    res.cookie("refreshToken", refreshToken, {
+    res.cookie("token", token, {
       httpOnly: true,
       maxAge: 72 * 60 * 60 * 1000,
       secure: false,
     });
-    res.json({
+    res.status(200).json({
+      success: true,
       _id: user._id,
       firstname: user.firstname,
       lastname: user.lastname,
@@ -185,47 +205,54 @@ const userLogin = asyncHandler(async (req, res) => {
       token: generateToken(user._id),
     });
   } else {
-    throw new Error("Invalid Credentials");
+    res.status(400).send("Invalid Credentials");
   }
 });
 
 //Handle refresh token
 const handleRefreshToken = asyncHandler(async (req, res) => {
   const cookie = req.cookies;
-  if (!cookie.refreshToken) throw new Error("No Refresh Token in Cookies");
-  const refreshToken = cookie.refreshToken;
-  const user = await User.findOne({ refreshToken });
-  if (!user) throw new Error("No Refresh Token present or matched");
-  jwt.verify(refreshToken, process.env.JWT_SECRET, (err, decoded) => {
+  if (!cookie.token) res.status(400).send("No token in cookies");
+  const token = cookie.token;
+  const user = await User.findOne({ token });
+  if (!user) res.status(400).send("No Rtoken present or matched");
+  jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
     if (err || user._id !== decoded.id) {
-      throw new Error("There is something wrong with refresh token");
+      res.status(400).send("There is something wrong with token");
     }
     const accessToken = generateToken(user._id);
-    res.json({ accessToken });
+    res.status(200).json({
+      success: true,
+      accessToken
+    });
   });
 });
 
 //Handle logout
 const logout = asyncHandler(async (req, res) => {
   const cookie = req.cookies;
-  if (!cookie.refreshToken) throw new Error("No Refresh Token in Cookies");
-  const refreshToken = cookie.refreshToken;
-  const user = await User.findOne({ refreshToken });
+  if (!cookie.token) res.status(400).send("No token in cookies");
+  const token = cookie.token;
+  const user = await User.findOne({ token });
   if (!user) {
-    res.clearCookie("refreshToken", {
+    res.clearCookie("token", {
       httpOnly: true,
       secure: true,
     });
     return res.sendStatus(403); //FORBIDDEN
   }
-  await User.findOneAndUpdate(refreshToken, {
-    refreshToken: "",
+  await User.findOneAndUpdate(token, {
+    token: "",
   });
-  res.clearCookie("refreshToken", {
+  res.clearCookie("token", {
     httpOnly: true,
     secure: true,
   });
-  res.status(201).json("Log out successful!");
+
+  res.status(200).json({
+    success: true,
+    message: "Log out successfully"
+  });
   res.sendStatus(403); //FORBIDDEN
 });
 
@@ -239,16 +266,20 @@ const updatePassword = asyncHandler(async (req, res) => {
 
     const checkPassword = await user.isPasswordMatched(oldPassword);
 
-    if (!checkPassword) throw new Error("Old password is incorrect!");
+    if (!checkPassword) res.status(400).send("Old password is incorrect!");
     if (newPassword !== confirmPassword) {
-      throw new Error("Password doesn't matched with each other!")
+      res.status(400).send("Password doesn't matched with each other!")
     }
 
     user.password = newPassword;
     await user.save();
-    res.json("Password updated successfully!");
+
+    res.status(200).json({
+      success: true,
+      message: "Password updated successfully"
+    });
   } catch (error) {
-    throw new Error(error);
+    res.status(400).send(error);
   }
 });
 
@@ -257,7 +288,7 @@ const forgotPasswordToken = asyncHandler(async (req, res) => {
   const { email } = req.body;
   try {
     const user = await User.findOne({ email });
-    if (!user) throw new Error("User not found with this email address");
+    if (!user) res.status(400).send("User not found with this email address");
     const token = await user.createPasswordResetToken();
     await user.save();
 
@@ -268,12 +299,16 @@ const forgotPasswordToken = asyncHandler(async (req, res) => {
         subject: "Reset your password",
         message: `Hello ${user.firstname}, please click on the link to reset your password. This link is valid for 10 minutes from now. ${activationUrl}`,
       });
-      res.status(200).json(`Please check your email:- ${user.email} to reset your password!`);
+
+      res.status(200).json({
+        success: true,
+        message: `Please check your email:- ${user.email} to reset your password!`
+      });
     } catch (error) {
-      throw new Error(error);
+      res.status(400).send(error);
     }
   } catch (error) {
-    throw new Error(error);
+    res.status(400).send(error);
   }
 });
 
@@ -287,12 +322,16 @@ const resetPassword = asyncHandler(async (req, res) => {
     passwordResetToken: hashedToken,
     passwordResetExpires: { $gt: Date.now() },
   });
-  if (!user) throw new Error("Token Expired, Please try again later");
+  if (!user) res.status(400).send("Token expired, please try again later");
   user.password = password;
   user.passwordResetToken = undefined;
   user.passwordResetExpires = undefined;
   await user.save();
-  res.json(user);
+
+    res.status(200).json({
+      success: true,
+      user
+    });
 });
 
 module.exports = {

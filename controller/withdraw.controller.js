@@ -22,24 +22,28 @@ const createWithdrawal = asyncHandler(async (req, res) => {
         subject: "Withdraw Request",
         message: `Hello ${shopName}, Your withdraw request of GHC${amount}$ is processing. It will take 3days to 7days to processing! `,
       });
-      res.status(201).json({
+
+      res.status(200).json({
         success: true,
       });
     } catch (error) {
-      throw new Error(error);
+      res.status(400).send(error);
     }
 
     const vendor = await Vendor.findById(vendorId);
     if (vendor.availableBalance === 0) {
-      throw new Error("You don't have money in your account")
+      return res.status(400).send("You don't have money in your account")
     } else {
       vendor.availableBalance = vendor.availableBalance - amount;
       await vendor.save();
     }
-    res.json(newWithdrawal);
 
+    res.status(200).json({
+      success: true,
+      newWithdrawal
+    });
   } catch (error) {
-    throw new Error(error);
+    res.status(400).send(error);
   }
 });
 
@@ -50,11 +54,15 @@ const getAllWithdrawals = asyncHandler(async (req, res) => {
   try {
     const allWithdrawals = await Withdraw.find({ vendor: vendorId }).sort({ createdAt: -1 });
     if (!allWithdrawals) {
-      return res.status(404).json({ error: "You don't have any withdrawals yet" });
+      return res.status(400).send("You don't have any withdrawals yet");
     }
-    res.json(allWithdrawals);
+
+    res.status(200).json({
+      success: true,
+      allWithdrawals
+    });
   } catch (error) {
-    throw new Error(error);
+    res.status(400).send(error);
   }
 });
 
@@ -67,17 +75,21 @@ const getaWithdrawal = asyncHandler(async (req, res) => {
     const withdraw = await Withdraw.findOne({ withdrawId });
     const checkVendor = withdraw.vendor.toString();
 
-    if (checkVendor !== vendorId) throw new Error("Not Authorised");
+    if (checkVendor !== vendorId) res.status(400).send("Not Authorised");
 
     if (checkVendor === vendorId) {
       const getWithdrawal = await Withdraw.find({ withdrawId });
       if (!getWithdrawal) {
-        return res.status(404).json({ error: "You don't have any withdrawals yet" });
+        return res.status(400).send("You don't have any withdrawals yet");
       }
-      res.json(getWithdrawal);
+
+      res.status(200).json({
+        success: true,
+        getWithdrawal
+      });
     };
   } catch (error) {
-    throw new Error(error);
+    res.status(400).send(error);
   }
 });
 
@@ -88,9 +100,13 @@ const updatePaymentMethod = asyncHandler(async (req, res) => {
   const { withdrawMethod } = req.body;
   try {
     const vendor = await Vendor.findByIdAndUpdate(vendorId, { withdrawMethod }, { new: true });
-    res.status(200).json(vendor);
+
+    res.status(200).json({
+      success: true,
+      vendor
+    });
   } catch (error) {
-    throw new Error(error);
+    res.status(400).send(error);
   }
 });
 
@@ -103,13 +119,17 @@ const deletePaymentMethod = asyncHandler(async (req, res) => {
     const vendor = await Vendor.findById(vendorId);
 
     if (!vendor) {
-      return new Error("Vendor not found");
+      return res.status(400).send("Vendor not found");
     }
     vendor.withdrawMethod = null;
     await vendor.save();
 
+    res.status(200).json({
+      success: true,
+      message: "Payment method deleted successfully"
+    });
   } catch (error) {
-    throw new Error(error);
+    res.status(400).send(error);
   }
 });
 
