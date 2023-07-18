@@ -27,7 +27,7 @@ const getUserTransactions = asyncHandler(async (req, res) => {
 
     res.status(200).json({
       success: true,
-      transaction
+      data: transactions
     });
   } catch (error) {
     res.status(400).send(error);
@@ -51,7 +51,7 @@ const getUserTransactionById = asyncHandler(async (req, res) => {
 
       res.status(200).json({
         success: true,
-        transaction
+        data: transaction
       });
     };
   } catch (error) {

@@ -21,7 +21,7 @@ const getUser = asyncHandler(async (req, res) => {
 
     res.status(200).json({
       success: true,
-      user,
+      data: user,
     });
   } catch (error) {
     res.status(400).send(error);
@@ -35,7 +35,7 @@ const getAllUsers = asyncHandler(async (req, res) => {
 
     res.status(200).json({
       success: true,
-      users,
+      data: users,
     });
   } catch (error) {
     res.status(400).send(error);
@@ -123,7 +123,7 @@ const getVendor = asyncHandler(async (req, res) => {
     }
     res.status(200).json({
       success: true,
-      vendor,
+      data: vendor,
     });
   } catch (error) {
     res.status(400).send(error);
@@ -137,7 +137,7 @@ const getAllVendors = asyncHandler(async (req, res) => {
 
     res.status(200).json({
       success: true,
-      vendors,
+      data: vendors,
     });
   } catch (error) {
     res.status(400).send(error);
@@ -227,7 +227,7 @@ const getProduct = asyncHandler(async (req, res) => {
     }
     res.status(200).json({
       success: true,
-      product,
+      data: product,
     });
   } catch (error) {
     res.status(400).send(error);
@@ -241,7 +241,7 @@ const getAllProducts = asyncHandler(async (req, res) => {
 
     res.status(200).json({
       success: true,
-      products,
+      data: products,
     });
   } catch (error) {
     res.status(400).send(error);
@@ -279,7 +279,7 @@ const allWithdrawals = asyncHandler(async (req, res) => {
 
     res.status(200).json({
       success: true,
-      withdraws
+      data: withdraws
     });
   } catch (error) {
     res.status(400).send(error);
@@ -318,7 +318,7 @@ const vendorWithdrew = asyncHandler(async (req, res) => {
 
     res.status(200).json({
       success: true,
-      withdraw
+      data: withdraw
     });
   } catch (error) {
     res.status(400).send(error);
@@ -340,7 +340,7 @@ const getAllOrders = asyncHandler(async (req, res) => {
 
     res.status(200).json({
       success: true,
-      orders
+      data: orders
     });
   } catch (error) {
     res.status(400).send(error);
@@ -356,7 +356,7 @@ const getAllOrdersOfUser = asyncHandler(async (req, res) => {
 
     res.status(200).json({
       success: true,
-      orders
+      data: orders
     });
   } catch (error) {
     res.status(400).send(error);
@@ -372,7 +372,7 @@ const getAllOrdersOfVendor = asyncHandler(async (req, res) => {
 
     res.status(200).json({
       success: true,
-      orders
+      data: orders
     });
   } catch (error) {
     res.status(400).send(error);
@@ -411,7 +411,7 @@ const getOrderById = asyncHandler(async (req, res) => {
 
     res.status(200).json({
       success: true,
-      order
+      data: order
     });
   } catch (error) {
     res.status(400).send(error);

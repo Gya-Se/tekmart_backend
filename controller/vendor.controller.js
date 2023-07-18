@@ -29,7 +29,7 @@ const createVendor = asyncHandler(async (req, res) => {
 
         res.status(200).json({
             success: true,
-            newVendorDetails
+            data: newVendorDetails
         });
     } catch (error) {
         res.status(400).send(error);
@@ -54,7 +54,7 @@ const updateAvatar = asyncHandler(async (req, res) => {
 
         res.status(200).json({
             success: true,
-            updatedVendor
+            data: updatedVendor
         });
     } catch (error) {
         res.status(400).send(error);
@@ -74,7 +74,7 @@ const updateVendor = asyncHandler(async (req, res) => {
 
         res.status(200).json({
             success: true,
-            updatedVendor
+            data: updatedVendor
         });
     } catch (error) {
         res.status(400).send(error);
@@ -112,7 +112,7 @@ const getVendor = asyncHandler(async (req, res) => {
 
         res.status(200).json({
             success: true,
-            vendor
+            data: vendor
         });
     } catch (error) {
         res.status(400).send(error);
@@ -166,7 +166,7 @@ const handleRefreshToken = asyncHandler(async (req, res) => {
 
         res.status(200).json({
             success: true,
-            accessToken
+            data: accessToken
         });
     });
 });
@@ -274,7 +274,7 @@ const resetPassword = asyncHandler(async (req, res) => {
 
     res.status(200).json({
         success: true,
-        vendor
+        message: "Password reset successfully!"
     });
 });
 

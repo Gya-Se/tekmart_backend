@@ -40,7 +40,7 @@ const createWithdrawal = asyncHandler(async (req, res) => {
 
     res.status(200).json({
       success: true,
-      newWithdrawal
+      data: newWithdrawal
     });
   } catch (error) {
     res.status(400).send(error);
@@ -59,7 +59,7 @@ const getAllWithdrawals = asyncHandler(async (req, res) => {
 
     res.status(200).json({
       success: true,
-      allWithdrawals
+      data: allWithdrawals
     });
   } catch (error) {
     res.status(400).send(error);
@@ -85,7 +85,7 @@ const getaWithdrawal = asyncHandler(async (req, res) => {
 
       res.status(200).json({
         success: true,
-        getWithdrawal
+        data: getWithdrawal
       });
     };
   } catch (error) {
@@ -103,7 +103,7 @@ const updatePaymentMethod = asyncHandler(async (req, res) => {
 
     res.status(200).json({
       success: true,
-      vendor
+      data: vendor
     });
   } catch (error) {
     res.status(400).send(error);

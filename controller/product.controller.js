@@ -19,7 +19,7 @@ const createProduct = asyncHandler(async (req, res) => {
 
     res.status(200).json({
       success: true,
-      newProduct
+      data: newProduct
     });
 
   } catch (error) {
@@ -49,7 +49,7 @@ const updateProduct = asyncHandler(async (req, res) => {
       }
       res.status(200).json({
         success: true,
-        updatedProduct
+        data: updatedProduct
       });
     }
   } catch (error) {
@@ -109,7 +109,7 @@ const getProduct = asyncHandler(async (req, res) => {
 
     res.status(200).json({
       success: true,
-      product
+      data: product
     });
   } catch (error) {
     res.status(400).send(error);
@@ -126,7 +126,7 @@ const getNewArrivals = asyncHandler(async (req, res) => {
 
     res.status(200).json({
       success: true,
-      products
+      data: products
     });
   } catch (error) {
     res.status(400).send(error);
@@ -143,7 +143,7 @@ const getTopDeals = asyncHandler(async (req, res) => {
 
     res.status(200).json({
       success: true,
-      products
+      data: products
     });
   } catch (error) {
     res.status(400).send(error);
@@ -192,7 +192,7 @@ const getTopCats = asyncHandler(async (req, res) => {
 
     res.status(200).json({
       success: true,
-      sortedCategory
+      data: sortedCategory
     });
   } catch (error) {
     res.status(400).send(error);
@@ -241,7 +241,7 @@ const getTopBrands = asyncHandler(async (req, res) => {
 
     res.status(200).json({
       success: true,
-      sortedBrand
+      data: sortedBrand
     });
   } catch (error) {
     res.status(400).send(error);
@@ -289,7 +289,7 @@ const getTopVendors = asyncHandler(async (req, res) => {
 
     res.status(200).json({
       success: true,
-      sortedVendors
+      data: sortedVendors
     });
   } catch (error) {
     res.status(400).send(error);
@@ -341,7 +341,7 @@ const productQuery = asyncHandler(async (req, res) => {
 
     res.status(200).json({
       success: true,
-      products
+      data: products
     });
   } catch (error) {
     res.status(400).send(error);
@@ -360,7 +360,7 @@ const getVendorProducts = asyncHandler(async (req, res) => {
 
     res.status(200).json({
       success: true,
-      allProducts
+      data: allProducts
     });
   } catch (error) {
     res.status(400).send(error);
@@ -378,7 +378,7 @@ const userGetVendorProducts = asyncHandler(async (req, res) => {
     }
     res.status(200).json({
       success: true,
-      allProducts
+      data: allProducts
     });
   } catch (error) {
     res.status(400).send(error);

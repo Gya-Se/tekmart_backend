@@ -29,7 +29,7 @@ const createUser = asyncHandler(async (req, res) => {
 
     res.status(200).json({
       success: true,
-      newUserDetails
+      data: newUserDetails
     });
   } catch (error) {
     res.status(400).send(error);
@@ -54,7 +54,7 @@ const updateAvatar = asyncHandler(async (req, res) => {
 
     res.status(200).json({
       success: true,
-      updatedUser
+      data: updatedUser
     });
   } catch (error) {
     res.status(400).send(error);
@@ -74,7 +74,7 @@ const updateUser = asyncHandler(async (req, res) => {
 
     res.status(200).json({
       success: true,
-      updatedUser
+      data: updatedUser
     });
   } catch (error) {
     res.status(400).send(error);
@@ -113,7 +113,7 @@ const updateAddress = asyncHandler(async (req, res) => {
 
     res.status(200).json({
       success: true,
-      user
+      data: user
     });
   } catch (error) {
     res.status(400).send(error);
@@ -135,7 +135,7 @@ const deleteAddress = asyncHandler(async (req, res) => {
 
     res.status(200).json({
       success: true,
-      user
+      data: user
     });
   } catch (error) {
     res.status(400).send(error);
@@ -172,7 +172,7 @@ const getUser = asyncHandler(async (req, res) => {
 
     res.status(200).json({
       success: true,
-      user
+      data: user
     });
   } catch (error) {
     res.status(400).send(error);
@@ -223,7 +223,7 @@ const handleRefreshToken = asyncHandler(async (req, res) => {
     const accessToken = generateToken(user._id);
     res.status(200).json({
       success: true,
-      accessToken
+      data: accessToken
     });
   });
 });
@@ -330,7 +330,7 @@ const resetPassword = asyncHandler(async (req, res) => {
 
     res.status(200).json({
       success: true,
-      user
+      message: "Password reset successfully!"
     });
 });
 

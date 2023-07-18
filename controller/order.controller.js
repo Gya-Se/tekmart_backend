@@ -40,7 +40,7 @@ const createAnOrder = asyncHandler(async (req, res) => {
 
     res.status(200).json({
       success: true,
-      orders
+      data: orders
     });
   } catch (error) {
     res.status(400).send(error);
@@ -78,7 +78,7 @@ const updateOrderStatus = asyncHandler(async (req, res) => {
 
     res.status(200).json({
       success: true,
-      order
+      data: order
     });
 
     async function updateOrder(id, qty) {
@@ -107,7 +107,7 @@ const getOrderId = asyncHandler(async (req, res) => {
 
     res.status(200).json({
       success: true,
-      userOrder
+      data: userOrder
     });
   } catch (error) {
     res.status(400).send(error);
@@ -123,7 +123,7 @@ const userGetAllOrders = asyncHandler(async (req, res) => {
 
     res.status(200).json({
       success: true,
-      orders
+      data: orders
     });
   } catch (error) {
     res.status(400).send(error);
@@ -139,7 +139,7 @@ const vendorGetOrderId = asyncHandler(async (req, res) => {
 
     res.status(200).json({
       success: true,
-      vendorOrder
+      data: vendorOrder
     });
   } catch (error) {
     res.status(400).send(error);
@@ -155,7 +155,7 @@ const vendorGetAllOrders = asyncHandler(async (req, res) => {
 
     res.status(200).json({
       success: true,
-      orders
+      data: orders
     });
   } catch (error) {
     res.status(400).send(error);
@@ -177,7 +177,7 @@ const refundRequest = asyncHandler(async (req, res) => {
     res.status(200).json({
       message: "Order refund request successfully!",
       success: true,
-      order,
+      data: order,
     });
   } catch (error) {
     res.status(400).send(error);

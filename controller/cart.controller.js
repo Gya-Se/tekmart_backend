@@ -34,7 +34,7 @@ const addToCart = asyncHandler(async (req, res) => {
 
     res.status(200).json({
       success: true,
-      cart
+      data: cart
     });
   } catch (error) {
     res.status(400).send(error);
@@ -61,7 +61,7 @@ const updateCartProductQuantity = asyncHandler(async (req, res) => {
 
     res.status(200).json({
       success: true,
-      cart
+      data: cart
     });
   } catch (error) {
     res.status(400).send(error);
@@ -89,7 +89,7 @@ const removeCartProduct = asyncHandler(async (req, res) => {
 
     res.status(200).json({
       success: true,
-      cart
+      data: cart
     });
   } catch (error) {
     res.status(400).send(error);
@@ -105,7 +105,7 @@ const getUserCart = asyncHandler(async (req, res) => {
 
     res.status(200).json({
       success: true,
-      cart
+      data: cart
     });
   } catch (error) {
     res.status(400).send(error);
@@ -121,7 +121,7 @@ const emptyCart = asyncHandler(async (req, res) => {
 
     res.status(200).json({
       success: true,
-      cart
+      data: cart
     });
   } catch (error) {
     res.status(400).send(error);
