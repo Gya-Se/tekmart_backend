@@ -374,7 +374,7 @@ const userGetVendorProducts = asyncHandler(async (req, res) => {
   try {
     const allProducts = await Product.find({ vendor: vendorId });
     if (!allProducts) {
-      return res.status(400).send("Vendor don't have any products yet" );
+      return res.status(400).send("Vendor don't have any products yet");
     }
     res.status(200).json({
       success: true,

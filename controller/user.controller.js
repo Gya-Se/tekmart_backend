@@ -328,10 +328,10 @@ const resetPassword = asyncHandler(async (req, res) => {
   user.passwordResetExpires = undefined;
   await user.save();
 
-    res.status(200).json({
-      success: true,
-      message: "Password reset successfully!"
-    });
+  res.status(200).json({
+    success: true,
+    message: "Password reset successfully!"
+  });
 });
 
 module.exports = {
