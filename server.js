@@ -31,7 +31,12 @@ app.use(morgan("dev"));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieParser());
-app.use(cors());
+app.use(cors(
+  {
+    origin: ["http://localhost:3000", "https://tekmart-frontend.vercel.app"],
+    optionsSuccessStatus: 200,
+  }
+));
 
 //Api connections
 app.use("/api/v1/user", userRouter);
@@ -53,7 +58,7 @@ dbConnect();
 
 //Creating a portal  to listen from
 app.get('/', (req, res) => {
-  res.send({message: "Server works!"})
+  res.send({ message: "Server works!" })
 })
 
 //Creating a portal  to listen from
