@@ -3,7 +3,7 @@ const Vendor = require("../models/vendor.model");
 const sendEmail = require("./email.controller");
 const asyncHandler = require("express-async-handler");
 const validateMongoDbId = require("../utils/validateMongoDbId");
-const { generateToken, createActivationToken } = require("../config/jwtToken");
+const { generateToken } = require("../config/jwtToken");
 const { generateRefreshToken } = require("../config/refreshToken");
 const jwt = require("jsonwebtoken");
 const crypto = require("crypto");
@@ -21,7 +21,7 @@ const createUser = asyncHandler(async (req, res) => {
     const existingUser = await User.findOne({ email: email });
 
     if (existingVendor || existingUser) {
-      return res.status(400).json({ error: "An account with this email already exists" });
+      return res.json({ message: "An account with this email already exists", status: 404 });
     }
 
     const newUserDetails = new User({ firstname, lastname, email, password });
@@ -49,7 +49,7 @@ const updateAvatar = asyncHandler(async (req, res) => {
     const fileUrl = path.join(req.file.filename);
     const updatedUser = await User.findByIdAndUpdate(userId, { avatar: fileUrl }, { new: true });
     if (!updatedUser) {
-      return res.status(404).json("User not found");
+      return res.json({ message: "User not found", status: 404 });
     }
 
     res.status(200).json({
@@ -69,7 +69,7 @@ const updateUser = asyncHandler(async (req, res) => {
     const { firstname, lastname, phone } = req.body;
     const updatedUser = await User.findByIdAndUpdate(userId, { firstname, lastname, phone }, { new: true });
     if (!updatedUser) {
-      return res.status(404).json("User not found");
+      return res.json({ message: "User not found", status: 404 });
     }
 
     res.status(200).json({
@@ -149,7 +149,7 @@ const deleteUser = asyncHandler(async (req, res) => {
   try {
     const deletedUser = await User.findByIdAndDelete(userId);
     if (!deletedUser) {
-      return res.status(404).json("User not found");
+      return res.json({ message: "User not found", status: 404 });
     }
     res.status(200).json({
       success: true,
@@ -167,7 +167,7 @@ const getUser = asyncHandler(async (req, res) => {
   try {
     const user = await User.findById(userId);
     if (!user) {
-      return res.status(404).json("User not found");
+      return res.json({ message: "User not found", status: 404 });
     }
 
     res.status(200).json({

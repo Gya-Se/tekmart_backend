@@ -3,7 +3,7 @@ const Vendor = require("../models/vendor.model");
 const sendEmail = require("./email.controller");
 const asyncHandler = require("express-async-handler");
 const validateMongoDbId = require("../utils/validateMongoDbId");
-const { generateToken, createActivationToken } = require("../config/jwtToken");
+const { generateToken } = require("../config/jwtToken");
 const { generateRefreshToken } = require("../config/refreshToken");
 const jwt = require("jsonwebtoken");
 const crypto = require("crypto");
@@ -21,7 +21,7 @@ const createVendor = asyncHandler(async (req, res) => {
         const existingUser = await User.findOne({ email: email });
 
         if (existingVendor || existingUser) {
-            return res.status(400).json({ error: "An account with this email already exists" });
+            return res.json({ message: "An account with this email already exists", status: 404 })
         }
 
         const newVendorDetails = new Vendor({ shopName, email, password, phone });
@@ -49,7 +49,7 @@ const updateAvatar = asyncHandler(async (req, res) => {
         const fileUrl = path.join(req.file.filename);
         const updatedVendor = await Vendor.findByIdAndUpdate(vendorId, { avatar: fileUrl }, { new: true });
         if (!updatedVendor) {
-            return res.status(404).json("Vendor not found");
+            return res.json({ message: "Vendor not found", status: 404 });
         }
 
         res.status(200).json({
@@ -69,7 +69,7 @@ const updateVendor = asyncHandler(async (req, res) => {
         const { description, address, phone } = req.body;
         const updatedVendor = await Vendor.findByIdAndUpdate(vendorId, { description, address, phone }, { new: true });
         if (!updatedVendor) {
-            return res.status(404).json("Vendor not found");
+            return res.json({ message: "Vendor not found", status: 404 });
         }
 
         res.status(200).json({
@@ -88,7 +88,7 @@ const deleteVendor = asyncHandler(async (req, res) => {
     try {
         const deletedVendor = await Vendor.findByIdAndDelete(vendorId);
         if (!deletedVendor) {
-            return res.status(404).json("Vendor not found");
+            return res.json({ message: "Vendor not found", status: 404 });
         }
 
         res.status(200).json({
@@ -107,7 +107,7 @@ const getVendor = asyncHandler(async (req, res) => {
     try {
         const vendor = await Vendor.findById(vendorId);
         if (!vendor) {
-            return res.status(404).json("Vendor not found");
+            return res.json({ message: "Vendor not found", status: 404 });
         }
 
         res.status(200).json({
@@ -123,7 +123,7 @@ const getVendor = asyncHandler(async (req, res) => {
 const vendorLogin = asyncHandler(async (req, res) => {
     const { email, password } = req.body;
     const vendor = await Vendor.findOne({ email });
-    
+
     if (!vendor) res.status(400).send("Invalid Credentials");
 
     if (vendor.role !== "vendor") res.status(400).send("Not Authorised");
