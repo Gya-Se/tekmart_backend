@@ -184,6 +184,8 @@ const userLogin = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
   const user = await User.findOne({ email });
 
+  if (!user) res.status(400).send("Invalid Credentials");
+
   if (user.isBlocked === true) res.status(400).send("Your account is blocked. Contact our customer service for support on how to recover your account");
 
   if (user && (await user.isPasswordMatched(password))) {

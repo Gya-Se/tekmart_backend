@@ -123,6 +123,8 @@ const getVendor = asyncHandler(async (req, res) => {
 const vendorLogin = asyncHandler(async (req, res) => {
     const { email, password } = req.body;
     const vendor = await Vendor.findOne({ email });
+    
+    if (!vendor) res.status(400).send("Invalid Credentials");
 
     if (vendor.role !== "vendor") res.status(400).send("Not Authorised");
 
