@@ -29,7 +29,7 @@ const createUser = asyncHandler(async (req, res) => {
 
     res.status(200).json({
       success: true,
-      // data: newUserDetails
+      message: "User created successfully!"
     });
   } catch (error) {
     res.status(400).send(error);
