@@ -33,7 +33,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(cors(
   {
-    origin: ["http://localhost:3000", "https://tekmart-frontend.vercel.app"],
+    origin: ["http://localhost:3000", "https://tekmart-frontend.vercel.app,", "https://tekmart-frontend-mi6h-89wc1bdaz-nanaquaci.vercel.app"],
     optionsSuccessStatus: 200,
     credentials: true,
   }
