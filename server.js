@@ -35,6 +35,7 @@ app.use(cors(
   {
     origin: ["http://localhost:3000", "https://tekmart-frontend.vercel.app"],
     optionsSuccessStatus: 200,
+    credentials: true,
   }
 ));
 
