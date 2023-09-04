@@ -184,9 +184,9 @@ const userLogin = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
   const user = await User.findOne({ email });
 
-  if (!user) res.json({message: "User not found", status: 404});
+  if (!user) res.json({ message: "User not found", status: 404 });
 
-  if (user.isBlocked === true) res.json({message: "Your account is blocked. Contact our customer service for support on how to recover your account", status: 404});
+  if (user.isBlocked === true) res.json({ message: "Your account is blocked. Contact our customer service for support on how to recover your account", status: 404 });
 
   if (user && (await user.isPasswordMatched(password))) {
     const token = generateRefreshToken(user._id);
@@ -208,7 +208,7 @@ const userLogin = asyncHandler(async (req, res) => {
       token: generateToken(user._id),
     });
   } else {
-    res.json({message: "Invalid Credentials", status: 404});
+    res.json({ message: "Invalid Credentials", status: 404 });
   }
 });
 
